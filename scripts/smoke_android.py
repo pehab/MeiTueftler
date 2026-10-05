@@ -48,6 +48,8 @@ def node(prefix, attr="text", timeout=15):
     screenshot("failure")
     (OUTPUT / "failure-crash.log").write_text(adb("logcat", "-d", "-b", "crash"))
     (OUTPUT / "failure-ui.xml").write_text(adb("shell", "cat", "/sdcard/workshop-ui.xml"))
+    (OUTPUT / "failure-system.log").write_text(adb("logcat", "-d", "-t", "400"))
+    (OUTPUT / "failure-activities.log").write_text(adb("shell", "dumpsys", "activity", "activities"))
     raise AssertionError(f"Missing {attr}: {prefix}")
 
 
@@ -76,12 +78,17 @@ adb("shell", "wm", "size", "1280x800")
 adb("shell", "wm", "density", "160")
 adb("shell", "input", "keyevent", "224")
 adb("shell", "wm", "dismiss-keyguard")
-adb("shell", "input", "keyevent", "82")
 time.sleep(1)
 adb("logcat", "-c")
 adb("install", "-r", "apk/app-debug.apk")
 adb("shell", "pm", "clear", PACKAGE)
-adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
+# wm resize may leave Pixel Launcher busy or keep its menu above the launched app.
+# This is a disposable emulator; stop only the observed launcher before starting the game.
+adb("shell", "am", "force-stop", "com.google.android.apps.nexuslauncher")
+launch = adb("shell", "am", "start", "-W", "-a", "android.intent.action.MAIN",
+             "-c", "android.intent.category.LAUNCHER", "-n", f"{PACKAGE}/.MainActivity")
+print(launch, flush=True)
+assert "Error" not in launch and "Status: ok" in launch, launch
 node("MeiTüftler", timeout=30)
 screenshot("menu")
 tap("16 Murmel-Aufgaben")

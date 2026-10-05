@@ -69,7 +69,11 @@ jobs:
           Enthält zehn Rätsel, einen freien Bauplatz und lokal gespeicherten Fortschritt.
           Dies ist ein Debug-Testbuild; kein Play-Store-Release.
           NOTES
-          gh release create "$RELEASE_TAG" "apk/$RELEASE_APK" --repo "$GH_REPO" --target "$GITHUB_SHA" --title "MeiTüftler ${APP_VERSION} · Testbuild ${GITHUB_RUN_NUMBER}" --notes-file release-notes.txt --prerelease
+          if gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "apk/$RELEASE_APK" --repo "$GH_REPO" --clobber
+          else
+            gh release create "$RELEASE_TAG" "apk/$RELEASE_APK" --repo "$GH_REPO" --target "$GITHUB_SHA" --title "MeiTüftler ${APP_VERSION} · Testbuild ${GITHUB_RUN_NUMBER}" --notes-file release-notes.txt --prerelease
+          fi
 
   smoke:
     needs: build

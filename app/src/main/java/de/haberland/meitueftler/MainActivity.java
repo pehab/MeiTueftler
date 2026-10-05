@@ -1,6 +1,7 @@
 package de.haberland.meitueftler;
 
-import android.app.Activity;
+import androidx.activity.ComponentActivity;
+import androidx.activity.OnBackPressedCallback;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -20,7 +21,6 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.window.OnBackInvokedDispatcher;
 import de.haberland.meitueftler.game.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-public final class MainActivity extends Activity {
+public final class MainActivity extends ComponentActivity {
     static final int INK=Color.rgb(35,63,64), TEAL=Color.rgb(20,125,120), CREAM=Color.rgb(247,242,232), ORANGE=Color.rgb(218,99,57);
     Level current;
     final List<Ramp> build=new ArrayList<>();
@@ -55,7 +55,9 @@ public final class MainActivity extends Activity {
         if(Build.VERSION.SDK_INT>=30)getWindow().setDecorFitsSystemWindows(false);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         try { tones=new ToneGenerator(AudioManager.STREAM_MUSIC,35); } catch(RuntimeException ignored) { tones=null; }
-        if(Build.VERSION.SDK_INT>=33) getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::goBack);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() { goBack(); }
+        });
         if(state!=null && state.containsKey("level")) {
             current=LevelCatalog.get(state.getInt("level"));
             decodeBuild(state.getString("build","[]"));
@@ -72,7 +74,6 @@ public final class MainActivity extends Activity {
     @Override protected void onPause() { paused=true;saveBuild();super.onPause(); }
     @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing(); }
     @Override protected void onDestroy() { if(tones!=null) tones.release();super.onDestroy(); }
-    @SuppressWarnings("deprecation") @Override public void onBackPressed() { goBack(); }
     private void goBack() { if(screen.equals("menu")) finish();else { saveBuild();engine=null;current=null;screen="menu";rebuildScreen(); } }
 
     int dp(float value) { return Math.round(value*getResources().getDisplayMetrics().density); }

@@ -27,6 +27,9 @@ def node(prefix, attr="text", timeout=15):
             if item.get(attr, "").strip().casefold().startswith(prefix.strip().casefold()):
                 return item
         time.sleep(0.5)
+    screenshot("failure")
+    (OUTPUT / "failure-crash.log").write_text(adb("logcat", "-d", "-b", "crash"))
+    (OUTPUT / "failure-ui.xml").write_text(adb("shell", "cat", "/sdcard/workshop-ui.xml"))
     raise AssertionError(f"Missing {attr}: {prefix}")
 
 
@@ -53,11 +56,15 @@ def open_first_level():
 
 adb("shell", "wm", "size", "1280x800")
 adb("shell", "wm", "density", "160")
+adb("shell", "input", "keyevent", "224")
+adb("shell", "wm", "dismiss-keyguard")
+adb("shell", "input", "keyevent", "82")
+time.sleep(1)
 adb("logcat", "-c")
 adb("install", "-r", "apk/app-debug.apk")
 adb("shell", "pm", "clear", PACKAGE)
 adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
-node("MeiTüftler")
+node("MeiTüftler", timeout=30)
 screenshot("menu")
 tap("16 Murmel-Aufgaben")
 node("  Deine Murmel-Aufgaben")

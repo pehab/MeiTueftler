@@ -9,3 +9,7 @@ local.properties
 
 __pycache__/
 *.pyc
+
+# Private Android signing material must never be committed.
+*.keystore
+*.jks

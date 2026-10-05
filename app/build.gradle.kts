@@ -13,6 +13,17 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    signingConfigs {
+        getByName("debug") {
+            // CI can supply a persistent private test key through a GitHub Actions secret.
+            System.getenv("MEITUEFTLER_SIGNING_STORE")?.let { path ->
+                storeFile = file(path)
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
     buildTypes { release { isMinifyEnabled = false } }
 }
 dependencies {

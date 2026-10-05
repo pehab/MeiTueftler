@@ -24,7 +24,9 @@ Eine Murmel, drei Bauteilarten, feste Hindernisse und ein Zielkorb bilden den Ba
 
 Die direkt installierbare APK liegt unter **[Releases](https://github.com/pehab/MeiTueftler/releases)**. Jeder erfolgreiche Build auf `main` veröffentlicht automatisch ein Testrelease mit APK. Die Veröffentlichung wartet auf Tests, Lint, Build und Emulator-Smoke-Test.
 
-Tags haben das Format `v0.2.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Die CI behält den Debug-Schlüssel über einen Cache für Updates bei. Wird dieser Cache gelöscht, kann sich die Signatur ändern; produktive Store-Releases benötigen später einen separat verwalteten Signaturschlüssel. APK-Updates benötigen außerdem einen höheren `versionCode`.
+Tags haben das Format `v0.2.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Solange das Secret fehlt, verwenden die APKs wechselnde Debugsignaturen; sie lassen sich dann nicht als direkte Updates installieren.
+
+**Wechsel von den ersten Testbuilds:** Deren Signaturen wechselten ungewollt zwischen CI-Läufen. Bei einem Signaturwechsel muss die bisherige Test-App deinstalliert werden; dadurch wird der lokale Fortschritt gelöscht. Die neuen Speicherformate lesen weiterhin alte Bauwerke, wenn die App-Daten erhalten bleiben. Nach einmaliger Einrichtung des festen Schlüssels bleiben zukünftige Signaturen gleich. APK-Updates benötigen außerdem einen höheren `versionCode`.
 
 ## Entwickeln
 

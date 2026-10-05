@@ -30,6 +30,8 @@ public final class Ramp {
         if(along<32||along>length+32||side>35+along*0.22)return 0;
         return 1-0.55*(along-32)/length;
     }
+    /** Fine placement keeps narrow routes reachable without jumping between ten-unit cells. */
+    public void moveTo(double px,double py) { x=Math.round(px);y=Math.round(py);clamp(); }
     public void clamp() {
         if(kind==Kind.FAN||kind==Kind.SWITCH) { x=Math.max(42,Math.min(958,x));y=Math.max(42,Math.min(558,y));return; }
         // Include the visible spring base and thick rounded ends, even at steep angles.

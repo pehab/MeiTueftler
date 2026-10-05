@@ -256,17 +256,20 @@ final class WorkshopView extends View {
                 if(dragging){Ramp r=owner.build.get(owner.selected);grabX=x-r.x;grabY=y-r.y;startX=r.x;startY=r.y;getParent().requestDisallowInterceptTouchEvent(true);}
                 owner.updateControls();invalidate();return true;
             case MotionEvent.ACTION_MOVE:
-                if(dragging&&owner.selected>=0&&owner.selected<owner.build.size()) {
-                    Ramp r=owner.build.get(owner.selected);
-                    if(!remembered&&Math.hypot(x-grabX-startX,y-grabY-startY)>5) { owner.rememberBuild();remembered=true; }
-                    if(remembered){r.x=Math.round((x-grabX)/10)*10;r.y=Math.round((y-grabY)/10)*10;r.clamp();invalidate();}
-                }
-                return true;
+                moveDraggedPiece(x,y);return true;
             case MotionEvent.ACTION_UP:
+                // Android can coalesce MOVE events. The release point is the final drag position.
+                moveDraggedPiece(x,y);
+                dragging=false;getParent().requestDisallowInterceptTouchEvent(false);owner.constructionChanged();performClick();return true;
             case MotionEvent.ACTION_CANCEL:
                 dragging=false;getParent().requestDisallowInterceptTouchEvent(false);owner.constructionChanged();if(event.getActionMasked()==MotionEvent.ACTION_UP)performClick();return true;
             default:return true;
         }
+    }
+    private void moveDraggedPiece(double x,double y) {
+        if(!dragging||owner.selected<0||owner.selected>=owner.build.size())return;
+        if(!remembered&&Math.hypot(x-grabX-startX,y-grabY-startY)>5) { owner.rememberBuild();remembered=true; }
+        if(remembered) { owner.build.get(owner.selected).moveTo(x-grabX,y-grabY);invalidate(); }
     }
     @Override public boolean performClick() { super.performClick();return true; }
 }

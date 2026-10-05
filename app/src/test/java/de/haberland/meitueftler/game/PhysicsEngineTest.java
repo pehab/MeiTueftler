@@ -43,6 +43,17 @@ public final class PhysicsEngineTest {
         }
         assertEquals(18,changed);assertEquals("build_-1",LevelCatalog.SANDBOX.buildKey());
     }
+    @Test public void everyHintCanBeBuiltUsingActualDragPlacement() {
+        for(Level l:LevelCatalog.LEVELS) {
+            java.util.ArrayList<Ramp> build=new java.util.ArrayList<>();
+            for(Ramp r:l.solution) { Ramp placed=r.copy();placed.moveTo(r.x,r.y);build.add(placed); }
+            PhysicsEngine e=new PhysicsEngine(l,build);finish(e);
+            assertEquals(l.name,PhysicsEngine.State.WON,e.state);
+        }
+        Ramp piece=new Ramp(500,300,320,-60,false,Ramp.Kind.FAN);
+        piece.moveTo(120.3,300.2);assertEquals(120,piece.x,0);assertEquals(300,piece.y,0);
+        piece.moveTo(124.2,303.1);assertEquals(124,piece.x,0);assertEquals(303,piece.y,0);
+    }
     @Test public void revisedHintsAllowSmallPlacementErrors() {
         for(Level l:LevelCatalog.LEVELS)if(l.layoutRevision==2) {
             int attempts=0,wins=0;

@@ -225,6 +225,10 @@ oy = y1+(y2-y1-600*scale)/2
 coords=[round(ox+500*scale),round(oy+300*scale),round(ox+120*scale),round(oy+300*scale)]
 adb("shell", "input", "swipe", *map(str,coords), "650")
 screenshot("fan-built")
+# Verify the saved release point before simulation; a short last MOVE must not shift the fan.
+fan_prefs=ET.fromstring(adb("shell","run-as",PACKAGE,"cat","shared_prefs/workshop.xml"))
+fan_build=json.loads(next(i.text for i in fan_prefs.findall("string") if i.get("name")=="build_16"))
+assert abs(fan_build[0]["x"]-120)<=2 and abs(fan_build[0]["y"]-300)<=2, fan_build
 tap("▶ Ausprobieren")
 node("Geschafft!", timeout=20)
 screenshot("fan-solved")

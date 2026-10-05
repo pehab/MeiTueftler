@@ -95,8 +95,10 @@ final class WorkshopView extends View {
         float half=(float)r.length/2;
         float thickness=(float)r.halfThickness();
         if(ghost) {
-            fill(0x55147D78);c.drawRoundRect(-half,-thickness-3,half,thickness+3,8,8,paint);
-            paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);paint.setPathEffect(new DashPathEffect(new float[]{10,8},0));c.drawRoundRect(-half,-thickness-4,half,thickness+4,9,9,paint);
+            float end=half+(r.kind==Ramp.Kind.BLOCK?thickness:0);
+            fill(0x55147D78);c.drawRoundRect(-end,-thickness-3,end,thickness+3,8,8,paint);
+            paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);paint.setPathEffect(new DashPathEffect(new float[]{10,8},0));c.drawRoundRect(-end,-thickness-4,end,thickness+4,9,9,paint);
+            fill(MainActivity.TEAL);paint.setTextSize(16);c.drawText(r.label(),-half+12,-thickness-16,paint);
         }else {
             if(r.kind==Ramp.Kind.BLOCK) {
                 fill(0x22192725);c.drawRoundRect(-half-24,-18,half+24,32,24,24,paint);

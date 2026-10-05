@@ -41,6 +41,17 @@ public final class PhysicsEngineTest {
         assertTrue(block.x-Math.abs(block.dx())-block.halfThickness()>=5);
         assertTrue(block.y+Math.abs(block.dy())+block.halfThickness()<=595);
     }
+    @Test public void everyElementFitsInsideWorkshopAtEverySupportedAngle() {
+        for(Ramp.Kind kind:Ramp.Kind.values())for(int angle=-85;angle<=85;angle+=5) {
+            Ramp r=new Ramp(-100,900,560,angle,false,kind);r.clamp();
+            double extent=kind==Ramp.Kind.TRAMPOLINE?37:r.halfThickness();
+            assertTrue(r.x-Math.abs(r.dx())-extent>=4.999);
+            assertTrue(r.x+Math.abs(r.dx())+extent<=995.001);
+            assertTrue(r.y-Math.abs(r.dy())-extent>=4.999);
+            assertTrue(r.y+Math.abs(r.dy())+extent<=595.001);
+            assertEquals(0,(r.length-160)%40,0.001);
+        }
+    }
     @Test public void blockCanBeGrabbedAnywhereOnItsSurface() {
         Ramp block=new Ramp(500,300,240,0,false,Ramp.Kind.BLOCK);
         assertEquals(0,block.distance(500,322),0);

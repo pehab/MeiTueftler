@@ -18,7 +18,13 @@ public final class Ramp {
     public double dx() { return Math.cos(Math.toRadians(angle))*length/2; }
     public double dy() { return Math.sin(Math.toRadians(angle))*length/2; }
     public void clamp() {
-        double marginX=Math.abs(dx())+halfThickness()+5, marginY=Math.abs(dy())+halfThickness()+5;
+        // Include the visible spring base and thick rounded ends, even at steep angles.
+        double padding=(kind==Kind.TRAMPOLINE?37:halfThickness())+5;
+        double radians=Math.toRadians(angle);
+        double available=Math.min((1000-2*padding)/Math.max(0.001,Math.abs(Math.cos(radians))),
+                (600-2*padding)/Math.max(0.001,Math.abs(Math.sin(radians))));
+        length=Math.min(length,40*Math.floor(available/40));
+        double marginX=Math.abs(dx())+padding, marginY=Math.abs(dy())+padding;
         x=Math.max(marginX,Math.min(1000-marginX,x));
         y=Math.max(marginY,Math.min(600-marginY,y));
     }

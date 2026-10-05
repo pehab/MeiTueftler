@@ -36,6 +36,6 @@ bash gradlew testDebugUnitTest lintDebug assembleDebug
 - `MainActivity`: Navigation, Bedienelemente und lokale Speicherung.
 - `WorkshopView`: skalierbare Canvas-Grafik und Drag-Gesten; die Bildschirmauflösung verändert die Physik nicht.
 - Unit-Tests prüfen insbesondere alle zehn Referenzlösungen, schnelle Kollisionen, Wiederholbarkeit und Baurücksetzung.
-- GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator und erstellt Screenshots von Menü, Aufgaben und Baufläche.
+- GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst die erste Aufgabe und prüft gespeicherten Fortschritt, Hochformat und die System-Zurück-Taste. Screenshots dokumentieren Menü, Aufgaben, Baufläche und Erfolg.
 
 Die App verwendet keine Netzberechtigung, Konten, Werbung, In-App-Käufe oder Analysedienste. Die Grafiken werden direkt mit Canvas gezeichnet.

@@ -86,6 +86,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
     steps:
+      - uses: actions/checkout@v5
       - name: Download tested APK
         run: gh run download "$GITHUB_RUN_ID" --repo "$GH_REPO" --name MeiTueftler-debug --dir apk
       - name: Enable emulator acceleration
@@ -98,24 +99,7 @@ jobs:
           arch: x86_64
           profile: pixel_2
           ram-size: 2048M
-          script: |
-            mkdir -p screenshots
-            adb shell wm size 1280x800
-            adb shell wm density 160
-            adb install -r apk/app-debug.apk
-            adb shell am start -W -n de.haberland.meitueftler/.MainActivity
-            sleep 2
-            adb shell pidof de.haberland.meitueftler
-            adb exec-out screencap -p > screenshots/menu.png
-            adb shell input tap 350 710
-            sleep 1
-            adb exec-out screencap -p > screenshots/levels.png
-            adb shell input tap 350 165
-            sleep 1
-            adb exec-out screencap -p > screenshots/workshop.png
-            adb shell pidof de.haberland.meitueftler
-            adb logcat -d -b crash > screenshots/crash.log
-            if rg -q 'FATAL EXCEPTION' screenshots/crash.log; then cat screenshots/crash.log; exit 1; fi
+          script: python3 scripts/smoke_android.py
       - name: Upload interface screenshots
         if: always()
         uses: actions/upload-artifact@v7

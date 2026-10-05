@@ -158,10 +158,12 @@ public final class MainActivity extends ComponentActivity {
         hintButton=button("Hinweis",false,()->{hintVisible=!hintVisible;if(hintVisible)hintUsed=true;updateControls();board.invalidate();});
         soundButton=button(sound?"Ton: an":"Ton: aus",false,()->{sound=!sound;prefs.edit().putBoolean("sound",sound).apply();updateControls();});
         toolRow(tools,hintButton,soundButton);
-        runButton=button("▶ Ausprobieren",true,this::toggleSimulation);LinearLayout.LayoutParams runLp=new LinearLayout.LayoutParams(-1,dp(56));runLp.setMargins(0,dp(6),0,dp(6));tools.addView(runButton,runLp);
+        runButton=button("▶ Ausprobieren",true,this::toggleSimulation);LinearLayout.LayoutParams runLp=new LinearLayout.LayoutParams(-1,dp(56));runLp.setMargins(0,dp(6),0,dp(6));if(landscape)tools.addView(runButton,runLp);
         statusText=text("Brett antippen und mit dem Finger verschieben.",13,false);tools.addView(statusText);
         scroll.addView(tools);body.addView(scroll,landscape?new LinearLayout.LayoutParams(dp(244),-1):new LinearLayout.LayoutParams(-1,dp(246)));
-        root.addView(body,new LinearLayout.LayoutParams(-1,0,1));updateControls();
+        root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+        if(!landscape)root.addView(runButton,runLp);
+        updateControls();
     }
     private void addEqual(LinearLayout line,View v) { LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(56),1);lp.setMargins(dp(3),dp(3),dp(3),dp(3));line.addView(v,lp); }
     private void toolRow(LinearLayout parent,Button a,Button b) { LinearLayout line=row();addEqual(line,a);addEqual(line,b);parent.addView(line); }

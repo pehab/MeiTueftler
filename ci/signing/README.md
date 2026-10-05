@@ -12,4 +12,4 @@ keytool -genkeypair -keystore meitueftler-test.keystore -storetype PKCS12 -store
 
 Base64-encode the resulting file and paste it directly into the GitHub Actions secret. Keep a private backup. Never commit or publish the file or its Base64 value. The repository ignores `*.keystore` and `*.jks` files.
 
-The first test builds used ephemeral Android-generated keys. Moving from those builds to a fixed certificate requires one uninstall/reinstall and removes local app data. Without the secret CI continues producing playable test APKs with ephemeral signatures.
+The first test builds used ephemeral Android-generated keys. Moving from those builds to a fixed certificate requires one uninstall/reinstall and removes local app data. Published main builds require the secret and fail if it is missing. Pull-request builds without access to secrets may use an ephemeral debug signature.

@@ -19,7 +19,7 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v5
-      - name: Configure optional private test signing key
+      - name: Configure private test signing key
         env:
           TEST_KEYSTORE_BASE64: ${{ secrets.MEITUEFTLER_TEST_KEYSTORE_BASE64 }}
         run: |
@@ -27,6 +27,10 @@ jobs:
             umask 077
             printf '%s' "$TEST_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/meitueftler-test.keystore"
             echo "MEITUEFTLER_SIGNING_STORE=$RUNNER_TEMP/meitueftler-test.keystore" >> "$GITHUB_ENV"
+            echo "Using the persistent private test signing key from Actions secrets."
+          elif [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "::error::MEITUEFTLER_TEST_KEYSTORE_BASE64 is required for published main builds."
+            exit 1
           else
             echo "::notice::No persistent test signing secret configured; this APK uses an ephemeral debug signature."
           fi
@@ -34,7 +38,7 @@ jobs:
         id: version
         run: echo "name=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
       - name: Test, lint and build
-        run: bash gradlew testDebugUnitTest lintDebug assembleDebug
+        run: bash gradlew testDebugUnitTest lintDebug assembleDebug signingReport
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
@@ -74,8 +78,8 @@ jobs:
           Die APK unten direkt auf dem Android-Gerät herunterladen und installieren.
           Enthält 16 Rätsel, Bretter, Trampoline und Blöcke, einen freien Bauplatz mit 20 Bauteilen und lokal gespeicherten Fortschritt.
           Dies ist ein Debug-Testbuild; kein Play-Store-Release.
-          Ohne eingerichtetes MEITUEFTLER_TEST_KEYSTORE_BASE64-Secret wechseln die Testsignaturen.
-          Beim Wechsel der Signatur ist eine Neuinstallation nötig, die lokalen Fortschritt löscht.
+          Diese APK verwendet den festen privaten Test-Signaturschlüssel. Künftige Testversionen lassen sich als Updates installieren.
+          Beim Wechsel von älteren Builds mit zufälligen Signaturen ist einmalig eine Neuinstallation nötig, die lokalen Fortschritt löscht.
           NOTES
           if gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" "apk/$RELEASE_APK" --repo "$GH_REPO" --clobber

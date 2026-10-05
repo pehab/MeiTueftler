@@ -18,8 +18,15 @@ def adb(*args):
 
 def tree():
     global launcher_recoveries
-    adb("shell", "uiautomator", "dump", "/sdcard/workshop-ui.xml")
-    root = ET.fromstring(adb("shell", "cat", "/sdcard/workshop-ui.xml"))
+    for attempt in range(4):
+        adb("shell", "rm", "-f", "/sdcard/workshop-ui.xml")
+        dump = adb("shell", "uiautomator", "dump", "/sdcard/workshop-ui.xml")
+        if "UI hierchary dumped to" in dump:
+            root = ET.fromstring(adb("shell", "cat", "/sdcard/workshop-ui.xml"))
+            break
+        if attempt == 3:
+            raise AssertionError(f"Accessibility dump failed after four attempts: {dump}")
+        time.sleep(1)
     # Some cold emulator boots show an ANR from Pixel Launcher after wm resize.
     # Recover only this exact system app once. Never dismiss a MeiTüftler ANR.
     if any(i.get("package") == "android" and i.get("text") == "Pixel Launcher isn't responding"

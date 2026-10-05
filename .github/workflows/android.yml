@@ -13,12 +13,12 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5, Node.js 24
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5, Node.js 24
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5, Node.js 24
       - name: Configure private test signing key
         env:
           TEST_KEYSTORE_BASE64: ${{ secrets.MEITUEFTLER_TEST_KEYSTORE_BASE64 }}
@@ -50,18 +50,19 @@ jobs:
       - name: Test, lint and build
         run: bash gradlew testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease signingReport
       - name: Upload APK
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7, Node.js 24
         with:
           name: MeiTueftler-debug
           path: app/build/outputs/apk/debug/app-debug.apk
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7, Node.js 24
         with:
           name: test-reports
           path: |
             app/build/reports/tests/
-            app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-*.html
+            app/build/reports/lint-results-*.xml
 
 
   release:
@@ -109,23 +110,24 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5, Node.js 24
       - name: Download tested APK
         run: gh run download "$GITHUB_RUN_ID" --repo "$GH_REPO" --name MeiTueftler-debug --dir apk
       - name: Enable emulator acceleration
         run: sudo chmod 666 /dev/kvm
       - name: Launch on tablet-sized Android emulator
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2, Node.js 24
         with:
           api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_2
           ram-size: 3072M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -no-metrics
           script: python3 scripts/smoke_android.py
       - name: Upload interface screenshots
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7, Node.js 24
         with:
           name: interface-screenshots
           path: screenshots/

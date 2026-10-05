@@ -15,7 +15,7 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsets;
+import androidx.core.view.WindowCompat;
 import android.widget.Button;
 import android.widget.EditText;
 import android.text.InputFilter;
@@ -59,7 +59,7 @@ public final class MainActivity extends ComponentActivity {
         updates=new PlayUpdates(this,this::saveBuild);
         sound=prefs.getBoolean("sound",true);
         Diagnostics.start(this,prefs.getBoolean("diagnostics",false));
-        if(Build.VERSION.SDK_INT>=30)getWindow().setDecorFitsSystemWindows(false);
+        if(Build.VERSION.SDK_INT>=30)WindowCompat.setDecorFitsSystemWindows(getWindow(),false);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         try { tones=new ToneGenerator(AudioManager.STREAM_MUSIC,35); } catch(RuntimeException ignored) { tones=null; }
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -105,7 +105,7 @@ public final class MainActivity extends ComponentActivity {
         setContentView(root);
         root.setOnApplyWindowInsetsListener((v,insets)->{
             if(Build.VERSION.SDK_INT>=30) {
-                android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());
+                android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars()|android.view.WindowInsets.Type.displayCutout());
                 v.setPadding(bars.left+dp(12),bars.top+dp(8),bars.right+dp(12),bars.bottom+dp(8));
             }
             return insets;
@@ -250,10 +250,10 @@ public final class MainActivity extends ComponentActivity {
         channelButton.setEnabled(editing&&linked);channelButton.setAlpha(editing&&linked?1f:0.45f);
         selectionText.setText(label);
         if(hintVisible)statusText.setText(current.hint);
-        else if(engine==null)statusText.setText("Bauteil antippen und verschieben. Luftkegel zeigt die Blasrichtung.");
-        else if(engine.state==PhysicsEngine.State.RETRY)statusText.setText("Noch nicht im Korb? Verändere ein Bauteil und probiere es wieder.");
-        else if(engine.state==PhysicsEngine.State.WON)statusText.setText("Deine Idee hat funktioniert!");
-        else statusText.setText("Beobachte die Murmel. Was passiert am nächsten Bauteil?");
+        else if(engine==null)statusText.setText(R.string.build_instructions);
+        else if(engine.state==PhysicsEngine.State.RETRY)statusText.setText(R.string.retry_instructions);
+        else if(engine.state==PhysicsEngine.State.WON)statusText.setText(R.string.success_message);
+        else statusText.setText(R.string.simulation_instructions);
     }
     private String encodeBuild() {
         JSONArray array=new JSONArray();

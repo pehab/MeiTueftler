@@ -12,6 +12,11 @@ import java.util.List;
 final class WorkshopView extends View {
     private final MainActivity owner;
     private final boolean preview;
+    private final Ramp previewTrampoline=new Ramp(680,385,160,-15,false,Ramp.Kind.TRAMPOLINE);
+    private final Ramp previewFan=new Ramp(125,420,240,-60,false,Ramp.Kind.FAN);
+    public WorkshopView(Context context) {
+        this(context,context instanceof MainActivity?(MainActivity)context:null,true);
+    }
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private float scale=1,offsetX,offsetY;
     private long lastFrame;
@@ -26,6 +31,7 @@ final class WorkshopView extends View {
         setContentDescription(preview?"Eine Murmel rollt auf einer Holzrampe zum Korb.":"Baufläche. Bauteile antippen und verschieben. Drehen und Größe über die Tasten daneben ändern.");
         setClickable(!preview);setFocusable(!preview);
     }
+    private boolean isPaused() { return owner!=null&&owner.paused; }
     void resumeDrawing() { lastFrame=0;accumulator=0;invalidate(); }
     @Override protected void onDraw(Canvas c) {
         super.onDraw(c);
@@ -45,7 +51,7 @@ final class WorkshopView extends View {
         for(Ramp r:level.fixed)drawRamp(c,r,false,false);
         List<Ramp> ramps=preview?level.solution:owner.build;
         for(int i=0;i<ramps.size();i++)drawRamp(c,ramps.get(i),!preview&&i==owner.selected,false);
-        if(preview){drawRamp(c,new Ramp(680,385,160,-15,false,Ramp.Kind.TRAMPOLINE),false,false);drawRamp(c,new Ramp(125,420,240,-60,false,Ramp.Kind.FAN),false,false);}
+        if(preview){drawRamp(c,previewTrampoline,false,false);drawRamp(c,previewFan,false,false);}
         if(!preview&&owner.hintVisible)for(Ramp r:level.solution)drawRamp(c,r,false,true);
         if(!preview) {
             int n=0;fill(0x77D96A42);for(float[] point:trail)if(n++%3==0)c.drawCircle(point[0],point[1],3,paint);
@@ -58,8 +64,8 @@ final class WorkshopView extends View {
             for(int i=0;i<16;i++) { fill(i%2==0?MainActivity.TEAL:MainActivity.ORANGE);float x=(float)level.goalX+(i%5-2)*22,y=(float)level.goalY-75-(i/5)*18;c.drawRoundRect(x,y,x+7,y+12,2,2,paint); }
         }
         c.restore();
-        if(!owner.paused && (preview || (!preview&&owner.engine==null&&hasFans())))postInvalidateOnAnimation();
-        if(!preview&&owner.engine!=null&&!owner.paused&&(owner.engine.state==PhysicsEngine.State.RUNNING || (winWallTime!=0&&System.nanoTime()-winWallTime<1_200_000_000L)))postInvalidateOnAnimation();
+        if(!isPaused() && (preview || (!preview&&owner.engine==null&&hasFans())))postInvalidateOnAnimation();
+        if(!preview&&owner.engine!=null&&!isPaused()&&(owner.engine.state==PhysicsEngine.State.RUNNING || (winWallTime!=0&&System.nanoTime()-winWallTime<1_200_000_000L)))postInvalidateOnAnimation();
     }
     private boolean hasFans() { for(Ramp r:owner.build)if(r.kind==Ramp.Kind.FAN)return true;return false; }
     private float animationSeconds() { return preview?(System.nanoTime()%60_000_000_000L)/1_000_000_000f:owner.engine==null?(System.nanoTime()%60_000_000_000L)/1_000_000_000f:(float)owner.engine.time; }
@@ -100,7 +106,7 @@ final class WorkshopView extends View {
     private void advance() {
         PhysicsEngine engine=owner.engine;
         if(engine!=lastEngine){winWallTime=0;lastEngine=engine;lastFrame=0;accumulator=0;trail.clear();trailSteps=0;}
-        if(engine==null||owner.paused)return;
+        if(engine==null||isPaused())return;
         long now=System.nanoTime();
         if(lastFrame!=0)accumulator+=Math.min(0.05,(now-lastFrame)/1_000_000_000.0);
         lastFrame=now;
@@ -221,7 +227,7 @@ final class WorkshopView extends View {
         paint.setColor(ghost?0xAA3B819B:0x663B819B);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(2);
         if(ghost)paint.setPathEffect(new DashPathEffect(new float[]{8,6},0));
         c.drawLine(32,-42,range+32,-far,paint);c.drawLine(32,42,range+32,far,paint);paint.setPathEffect(null);
-        float phase=owner.paused?0:(animationSeconds()*(40+r.power*25))%70;
+        float phase=isPaused()?0:(animationSeconds()*(40+r.power*25))%70;
         for(int lane=-1;lane<=1;lane++)for(float d=50+phase;d<range+25;d+=70) {
             float y=lane*(25+d*0.17f);
             paint.setColor(0x886098A9);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(2);
@@ -231,7 +237,7 @@ final class WorkshopView extends View {
         fill(0x332E3B3B);c.drawCircle(3,5,35,paint);
         fill(ghost?0x889EBCB5:0xFF527D83);c.drawCircle(0,0,34,paint);
         fill(0xFFE1D6B2);c.drawCircle(0,0,29,paint);
-        c.save();c.rotate(owner.paused?0:animationSeconds()*(90+r.power*70));
+        c.save();c.rotate(isPaused()?0:animationSeconds()*(90+r.power*70));
         for(int blade=0;blade<3;blade++){c.rotate(120);fill(0xFFDB8056);c.drawOval(0,-9,24,8,paint);}c.restore();
         paint.setColor(0xBB365C61);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(2);
         c.drawCircle(0,0,23,paint);c.drawCircle(0,0,14,paint);c.drawLine(-28,0,28,0,paint);c.drawLine(0,-28,0,28,paint);

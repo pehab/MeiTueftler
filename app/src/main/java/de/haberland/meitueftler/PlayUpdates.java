@@ -35,9 +35,14 @@ final class PlayUpdates {
     private boolean installedFromPlay() {
         if(BuildConfig.DEBUG)return false;
         try {
-            String installer=Build.VERSION.SDK_INT>=30?activity.getPackageManager().getInstallSourceInfo(activity.getPackageName()).getInstallingPackageName():activity.getPackageManager().getInstallerPackageName(activity.getPackageName());
+            String installer=Build.VERSION.SDK_INT>=30?activity.getPackageManager().getInstallSourceInfo(activity.getPackageName()).getInstallingPackageName():legacyInstaller();
             return "com.android.vending".equals(installer);
         }catch(android.content.pm.PackageManager.NameNotFoundException ignored){return false;}
+    }
+    // Android 8–10 have no InstallSourceInfo replacement. Keep this fallback isolated.
+    @SuppressWarnings("deprecation")
+    private String legacyInstaller() {
+        return activity.getPackageManager().getInstallerPackageName(activity.getPackageName());
     }
     void check() {
         if(!installedFromPlay()){Toast.makeText(activity,"Updates gibt es für die über Google Play installierte App.",Toast.LENGTH_LONG).show();return;}

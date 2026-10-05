@@ -1,15 +1,15 @@
 # Firebase und lokaler Play-Store-Release
 
-Stand: 5. Oktober 2026. Version 0.4.0, versionCode 5, Paket de.haberland.meitueftler.
+Stand: 5. Oktober 2026. Version 0.4.1, versionCode 6, Paket de.haberland.meitueftler.
 
 ## Firebase einrichten
 
 1. In einem eigenen Firebase-Projekt eine Android-App mit genau `de.haberland.meitueftler` registrieren. Google Analytics ist für dieses Projekt nicht erforderlich und nicht als SDK eingebaut.
-2. Crashlytics in der Firebase-Konsole öffnen. `google-services.json` herunterladen und lokal unter `app/google-services.json` ablegen. Diese Konfigurationsdatei wird durch .gitignore ausgeschlossen; keine Service-Account-Schlüssel hochladen.
-3. Für GitHub-APKs optional das Actions-Secret `MEITUEFTLER_GOOGLE_SERVICES_JSON` mit dem vollständigen JSON-Inhalt setzen. CI schreibt es während des Builds in app/google-services.json. Ohne Konfiguration bleibt der Diagnose-Schalter unverfügbar; das Spiel baut und funktioniert trotzdem.
+2. Crashlytics in der Firebase-Konsole öffnen. `google-services.json` herunterladen und lokal unter `app/google-services.json` ablegen. Die öffentliche Firebase-Client-Konfiguration für genau MeiTüftler ist im Repository enthalten; private Service-Account-Schlüssel oder Keystores gehören nicht hinein.
+3. Für GitHub-APKs optional das Actions-Secret `MEITUEFTLER_GOOGLE_SERVICES_JSON` mit dem vollständigen JSON-Inhalt setzen. CI schreibt es während des Builds in app/google-services.json. Ohne Secret wird die eingecheckte MeiTüftler-Konfiguration verwendet.
 4. Android Studio synchronisieren. Google-Services- und Crashlytics-Gradle-Plugins werden nur mit vorhandener Konfiguration angewandt. SDK: Firebase BoM 34.19.0, Crashlytics; keine Analytics-Abhängigkeit.
 5. Auf einem eigenen Testgerät „Für Eltern · Info“ öffnen, Erwachsenenabfrage beantworten und die Datenerklärung lesen. „Diagnose erlauben“ aktivieren. Vorher wird Firebase nicht initialisiert; der automatische FirebaseInitProvider ist aus dem Manifest entfernt und die Sammlung standardmäßig deaktiviert.
-6. Nur im Debug-Build erscheint bei erlaubter Diagnose „Test-Absturz“. Rückfrage bestätigen, App neu öffnen, Bericht in der Crashlytics-Konsole prüfen. Ohne diesen echten Bericht ist die Einrichtung noch nicht Ende zu Ende verifiziert.
+6. Nur im Debug-Build erscheint bei erlaubter Diagnose „Test-Absturz“. Rückfrage bestätigen, App neu öffnen, Bericht in der Crashlytics-Konsole prüfen. Die CI führt einen bestätigten synthetischen Test-Absturz aus und kontrolliert die Crashlytics-Queue sowie, soweit zeitnah vorhanden, den HTTP-Upload-Acknowledgement. Die Anzeige des Berichts in der Firebase-Konsole muss separat kontrolliert werden.
 7. Diagnose wieder ausschalten prüfen: automatische Meldung deaktiviert, noch nicht gesendete Berichte werden zum Löschen vorgemerkt, bei künftigen Starts ohne Zustimmung wird Firebase nicht gestartet. Bereits gesendete Daten werden nicht zurückgerufen. Keine Erfindungsnamen, Bauwerke oder Nutzer-IDs als Custom Keys oder Logs anhängen.
 
 ## Lokales AAB
@@ -37,3 +37,9 @@ Offizielle Quellen:
 - https://firebase.google.com/support/privacy
 - https://support.google.com/googleplay/android-developer/answer/9893335
 - https://support.google.com/googleplay/android-developer/answer/10787469
+
+## Play-In-App-Updates
+
+Im Elternbereich gibt es im Release-Build „Nach Updates suchen“. Nur eine über Google Play installierte App startet den flexiblen Update-Dialog; Debug-/GitHub-Builds kontaktieren Play nicht. Heruntergeladene Updates werden nach Bestätigung und Speicherung des Aufbaus mit Neustart abgeschlossen. Prüfen im internen Play-Test mit zwei Versionen und höherem versionCode; ein lokaler Build allein kann diesen Store-Ablauf nicht Ende zu Ende testen.
+
+Quelle: https://developer.android.com/guide/playcore/in-app-updates/kotlin-java

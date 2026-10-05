@@ -331,4 +331,63 @@ assert "com.google.firebase.analytics" not in adb("shell","dumpsys","package",PA
 log = adb("logcat", "-d", "-b", "crash")
 (OUTPUT / "crash.log").write_text(log)
 assert "FATAL EXCEPTION" not in log, log
-print("PASS: original puzzle, trampoline puzzle, new toolbox, typed persistence, legacy builds, undo, rotation, fan puzzle, named inventions, switch-door puzzle, saved channels, opt-in Firebase manifest and Back")
+print("PASS: original puzzle, trampoline puzzle, new toolbox, typed persistence, legacy builds, undo, rotation, fan puzzle, named inventions, switch-door puzzle, saved channels, opt-in Firebase manifest and Back", flush=True)
+
+# Exercise consent in the parent UI. Only a synthetic, confirmed test crash is expected.
+def parent_info():
+    tap("Für Eltern · Info")
+    root=tree()
+    question=next(i.get("text") for i in root.iter("node") if "Wie viel ist" in i.get("text", ""))
+    a,b=map(int,re.search(r"(\d+) × (\d+)",question).groups())
+    field=node("Antwort für Eltern","content-desc")
+    x1,y1,x2,y2=map(int,re.findall(r"\d+",field.get("bounds")))
+    adb("shell","input","tap",str((x1+x2)//2),str((y1+y2)//2))
+    adb("shell","input","text",str(a*b))
+    tap("Weiter")
+    node("Info und Datenschutz")
+
+adb("shell","setprop","log.tag.FirebaseCrashlytics","DEBUG")
+adb("shell","setprop","log.tag.TransportRuntime.CctTransportBackend","DEBUG")
+adb("shell","setprop","log.tag.TransportRuntime.Uploader","DEBUG")
+parent_info()
+root=tree()
+assert any("Diagnose: aus" in i.get("text", "") for i in root.iter("node"))
+screenshot("parents-diagnostics-off")
+tap("Diagnose erlauben")
+time.sleep(5)
+parent_info()
+root=tree()
+assert any("Diagnose: an" in i.get("text", "") for i in root.iter("node"))
+screenshot("parents-diagnostics-on")
+tap("Test-Absturz")
+tap("Test auslösen")
+time.sleep(4)
+crash=adb("logcat","-d","-b","crash")
+assert "MeiTueftler manual Crashlytics test" in crash, crash
+(OUTPUT/"expected-diagnostic-crash.log").write_text(crash)
+adb("shell","am","start","-W","-n",f"{PACKAGE}/.MainActivity")
+node("MeiTüftler",timeout=30)
+# Give Crashlytics/Android DataTransport time to schedule and upload the test report.
+end=time.monotonic()+90
+queued=False;uploaded=False
+while time.monotonic()<end:
+    diagnostics=adb("logcat","-d","-s","FirebaseCrashlytics","TransportRuntime.CctTransportBackend","TransportRuntime.Uploader")
+    queued="successfully enqueued to DataTransport" in diagnostics
+    uploaded="Status Code: 200" in diagnostics or "Status Code: 202" in diagnostics
+    if queued and uploaded:break
+    time.sleep(3)
+(OUTPUT/"diagnostics-delivery.log").write_text(diagnostics)
+assert queued,"Crashlytics did not enqueue the synthetic report"
+print("Crashlytics synthetic report enqueued; HTTP upload acknowledgement:",uploaded,flush=True)
+parent_info()
+tap("Diagnose ausschalten")
+parent_info()
+assert any("Diagnose: aus" in i.get("text", "") for i in tree().iter("node"))
+tap("Schließen")
+adb("shell","am","force-stop",PACKAGE)
+adb("logcat","-c")
+adb("shell","am","start","-W","-n",f"{PACKAGE}/.MainActivity")
+node("MeiTüftler",timeout=30)
+time.sleep(2)
+assert "Initializing Firebase Crashlytics" not in adb("logcat","-d","-s","FirebaseCrashlytics")
+print("PASS: parent consent, confirmed synthetic crash, SDK report queue, consent withdrawal and startup without Firebase",flush=True)

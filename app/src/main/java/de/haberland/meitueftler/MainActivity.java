@@ -50,11 +50,13 @@ public final class MainActivity extends ComponentActivity {
     private TextView selectionText, statusText;
     private final List<Button> editButtons=new ArrayList<>();
     private ToneGenerator tones;
+    private PlayUpdates updates;
     private LinearLayout root;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         prefs=getSharedPreferences("workshop",MODE_PRIVATE);
+        updates=new PlayUpdates(this,this::saveBuild);
         sound=prefs.getBoolean("sound",true);
         Diagnostics.start(this,prefs.getBoolean("diagnostics",false));
         if(Build.VERSION.SDK_INT>=30)getWindow().setDecorFitsSystemWindows(false);
@@ -78,8 +80,8 @@ public final class MainActivity extends ComponentActivity {
         if(current!=null && screen.equals("game")) { out.putInt("level",current.id);out.putString("build",encodeBuild());out.putBoolean("hintUsed",hintUsed);out.putString("inventionId",inventionId); }
     }
     @Override protected void onPause() { paused=true;saveBuild();super.onPause(); }
-    @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing(); }
-    @Override protected void onDestroy() { if(tones!=null) tones.release();super.onDestroy(); }
+    @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing();if(updates!=null)updates.resume(); }
+    @Override protected void onDestroy() { if(tones!=null) tones.release();if(updates!=null)updates.close();super.onDestroy(); }
     private void goBack() { if(screen.equals("menu")) finish();else { saveBuild();engine=null;current=null;screen="menu";rebuildScreen(); } }
 
     int dp(float value) { return Math.round(value*getResources().getDisplayMetrics().density); }
@@ -350,6 +352,7 @@ public final class MainActivity extends ComponentActivity {
             if(Diagnostics.start(this,value)){prefs.edit().putBoolean("diagnostics",value).apply();Toast.makeText(this,value?"Diagnose eingeschaltet":"Diagnose ausgeschaltet",Toast.LENGTH_SHORT).show();}
             else Toast.makeText(this,"Diagnose konnte nicht aktiviert werden.",Toast.LENGTH_SHORT).show();
         });
+        if(!BuildConfig.DEBUG)dialog.setNeutralButton("Nach Updates suchen",(d,w)->updates.check());
         if(BuildConfig.DEBUG&&enabled)dialog.setNeutralButton("Test-Absturz",(d,w)->new AlertDialog.Builder(this)
             .setTitle("Diagnose testen?").setMessage("Die App wird absichtlich beendet. Danach erneut öffnen und den Bericht in Firebase prüfen.")
             .setNegativeButton("Abbrechen",null).setPositiveButton("Test auslösen",(x,y)->{throw new IllegalStateException("MeiTueftler manual Crashlytics test");}).show());

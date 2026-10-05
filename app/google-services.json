@@ -1,0 +1,71 @@
+{
+  "project_info": {
+    "project_number": "66101709976",
+    "project_id": "meicaller",
+    "storage_bucket": "meicaller.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:66101709976:android:cd801448ed9f6aa423d4ed",
+        "android_client_info": {
+          "package_name": "de.haberland.meitueftler"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "66101709976-3u5e0kilmjvapc88fjj073rhr1g3880i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.haberland.meitueftler",
+            "certificate_hash": "8c84735fba4fcc96d59317360fec370a8c6a01c5"
+          }
+        },
+        {
+          "client_id": "66101709976-7pc9rbjrm0q9vfsljfsmhsvhs8bmsbd4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.haberland.meitueftler",
+            "certificate_hash": "9cee43fd3659b6358783ab068c2afba49b3bd78c"
+          }
+        },
+        {
+          "client_id": "66101709976-8qtbtbn36n4b8vacfe8e2m89qnlbtap0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.haberland.meitueftler",
+            "certificate_hash": "6e1b16998c6f98ed45b29e912f0de863bf410c97"
+          }
+        },
+        {
+          "client_id": "66101709976-u59f2e4b57v6o0fktn29rdaa1qng03gn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.haberland.meitueftler",
+            "certificate_hash": "9879b15c7b623102322e50726b2c2977aea1ec9d"
+          }
+        },
+        {
+          "client_id": "66101709976-vj5e359qe9nsvjj2vh95v609jkpu4sdm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC10ExcoCFeDKLQ2k7JwNk8l9REHXxZ2gs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "66101709976-vj5e359qe9nsvjj2vh95v609jkpu4sdm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

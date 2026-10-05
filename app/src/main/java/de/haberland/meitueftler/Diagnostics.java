@@ -20,7 +20,9 @@ final class Diagnostics {
             }
             FirebaseApp app=FirebaseApp.initializeApp(context.getApplicationContext());
             if(app==null)return false;
-            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true);
+            FirebaseCrashlytics crash=FirebaseCrashlytics.getInstance();
+            crash.setCrashlyticsCollectionEnabled(true);
+            crash.setCustomKey("build_type",BuildConfig.DEBUG?"debug":"release");
             return true;
         } catch(RuntimeException failure) {
             android.util.Log.w("MeiTueftler","Optional diagnostics could not be initialized");

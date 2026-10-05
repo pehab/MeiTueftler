@@ -42,13 +42,13 @@ jobs:
             umask 077
             printf '%s' "$FIREBASE_CONFIG" > app/google-services.json
           else
-            echo "Firebase is not configured; optional diagnostics remain unavailable."
+            echo "Using the MeiTueftler Firebase client configuration from the repository."
           fi
       - name: Read app version
         id: version
         run: echo "name=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
       - name: Test, lint and build
-        run: bash gradlew testDebugUnitTest lintDebug assembleDebug signingReport
+        run: bash gradlew testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease signingReport
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
@@ -63,18 +63,6 @@ jobs:
             app/build/reports/tests/
             app/build/reports/lint-results-debug.html
 
-      - name: Verify configured Firebase build
-        run: |
-          if [ ! -f app/google-services.json ]; then
-            python3 - <<'PYCONFIG'
-          import json
-          from pathlib import Path
-          fixture = {"project_info": {"project_number": "123456789012", "project_id": "meitueftler-ci-fixture"}, "client": [{"client_info": {"mobilesdk_app_id": "1:123456789012:android:0000000000000000000000", "android_client_info": {"package_name": "de.haberland.meitueftler"}}, "api_key": [{"current_key": "AIza" + "A" * 35}]}], "configuration_version": "1"}
-          Path("app/google-services.json").write_text(json.dumps(fixture))
-          PYCONFIG
-          fi
-          # Compile the configured plugin path, but never publish this fixture APK.
-          bash gradlew assembleDebug
 
   release:
     needs: [ build, smoke ]
@@ -99,7 +87,7 @@ jobs:
           Spielbare Android-Testversion der Murmel- und Rampenwerkstatt.
 
           Die APK unten direkt auf dem Android-Gerät herunterladen und installieren.
-          Enthält 24 Rätsel, Bretter, Trampoline, Blöcke, Ventilatoren, Schalter und Türen, einen freien Bauplatz mit 20 Bauteilen, benannte Erfindungen und eine warme Holzwerkstatt. Optionale Crashlytics-Diagnose wird nur in konfigurierten Builds nach Zustimmung im Elternbereich aktiviert. Fortschritt und Maschinen werden lokal gespeichert.
+          Enthält 24 Rätsel, Bretter, Trampoline, Blöcke, Ventilatoren, Schalter und Türen, einen freien Bauplatz mit 20 Bauteilen, benannte Erfindungen und eine warme Holzwerkstatt. Crashlytics ist eingerichtet und wird nach Zustimmung im Elternbereich aktiviert. Neues MeiApp-Icon. Fortschritt und Maschinen werden lokal gespeichert.
           Dies ist ein Debug-Testbuild; kein Play-Store-Release.
           Diese APK verwendet den festen privaten Test-Signaturschlüssel. Künftige Testversionen lassen sich als Updates installieren.
           Beim Wechsel von älteren Builds mit zufälligen Signaturen ist einmalig eine Neuinstallation nötig, die lokalen Fortschritt löscht.
@@ -113,7 +101,7 @@ jobs:
   smoke:
     needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       actions: read
       contents: read

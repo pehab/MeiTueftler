@@ -66,7 +66,7 @@ jobs:
           Spielbare Android-Testversion der Murmel- und Rampenwerkstatt.
 
           Die APK unten direkt auf dem Android-Gerät herunterladen und installieren.
-          Enthält zehn Rätsel, einen freien Bauplatz und lokal gespeicherten Fortschritt.
+          Enthält 16 Rätsel, Bretter, Trampoline und Blöcke, einen freien Bauplatz mit 20 Bauteilen und lokal gespeicherten Fortschritt.
           Dies ist ein Debug-Testbuild; kein Play-Store-Release.
           NOTES
           if gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then

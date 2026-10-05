@@ -22,7 +22,7 @@ final class WorkshopView extends View {
     private int trailSteps;
     WorkshopView(Context context,MainActivity owner,boolean preview) {
         super(context);this.owner=owner;this.preview=preview;
-        setContentDescription(preview?"Eine Murmel rollt auf einer Holzrampe zum Korb.":"Baufläche. Bretter antippen und verschieben. Drehen und Brettlänge über die Tasten daneben ändern.");
+        setContentDescription(preview?"Eine Murmel rollt auf einer Holzrampe zum Korb.":"Baufläche. Bauteile antippen und verschieben. Drehen und Größe über die Tasten daneben ändern.");
         setClickable(!preview);setFocusable(!preview);
     }
     void resumeDrawing() { lastFrame=0;accumulator=0;invalidate(); }
@@ -93,16 +93,34 @@ final class WorkshopView extends View {
     private void drawRamp(Canvas c,Ramp r,boolean selected,boolean ghost) {
         c.save();c.translate((float)r.x,(float)r.y);c.rotate((float)r.angle);
         float half=(float)r.length/2;
+        float thickness=(float)r.halfThickness();
         if(ghost) {
-            fill(0x55147D78);c.drawRoundRect(-half,-8,half,8,8,8,paint);
-            paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);paint.setPathEffect(new DashPathEffect(new float[]{10,8},0));c.drawRoundRect(-half,-9,half,9,9,9,paint);
+            fill(0x55147D78);c.drawRoundRect(-half,-thickness-3,half,thickness+3,8,8,paint);
+            paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);paint.setPathEffect(new DashPathEffect(new float[]{10,8},0));c.drawRoundRect(-half,-thickness-4,half,thickness+4,9,9,paint);
         }else {
+            if(r.kind==Ramp.Kind.BLOCK) {
+                fill(0x22192725);c.drawRoundRect(-half-24,-18,half+24,32,24,24,paint);
+                fill(0xFF708B9D);c.drawRoundRect(-half-24,-24,half+24,24,24,24,paint);
+                fill(0xFFAFC9D6);c.drawRoundRect(-half+12,-21,half-12,-12,5,5,paint);
+                fill(0xFF405C70);for(float bolt=-half+24;bolt<half;bolt+=40)c.drawCircle(bolt,7,4,paint);
+            } else if(r.kind==Ramp.Kind.TRAMPOLINE) {
+                fill(0x22192725);c.drawRoundRect(-half,8,half,37,9,9,paint);
+                fill(0xFFCDB9E7);c.drawRoundRect(-half+10,8,half-10,28,6,6,paint);
+                paint.setColor(0xFF8060A8);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);
+                Path spring=new Path();spring.moveTo(-half+14,18);
+                for(float a=-half+22;a<half-12;a+=16){spring.lineTo(a,9);spring.lineTo(a+8,25);}
+                c.drawPath(spring,paint);
+                fill(0xFF8060A8);c.drawRoundRect(-half,-5,half,5,5,5,paint);
+                fill(0xFFDCC7F4);c.drawRoundRect(-half+4,-5,half-4,-1,3,3,paint);
+                fill(0xFF5A3D83);c.drawCircle(-half+12,0,5,paint);c.drawCircle(half-12,0,5,paint);
+            } else {
             fill(0x22192725);c.drawRoundRect(-half,-3,half,15,9,9,paint);
             fill(r.fixed?0xFF728B8B:0xFFE7B365);c.drawRoundRect(-half,-6,half,6,6,6,paint);
             fill(r.fixed?0xFFADC1BE:0xFFF8D292);c.drawRoundRect(-half+4,-5,half-4,-1,3,3,paint);
             fill(r.fixed?0xFF405E60:0xFFAE7C43);c.drawCircle(-half+15,0,3,paint);c.drawCircle(half-15,0,3,paint);
+            }
             if(selected) {
-                paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(4);c.drawRoundRect(-half-5,-12,half+5,12,12,12,paint);
+                paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(4);c.drawRoundRect(-half-thickness-5,-thickness-7,half+thickness+5,thickness+7,12,12,paint);
                 fill(MainActivity.TEAL);c.drawCircle(-half,0,7,paint);c.drawCircle(half,0,7,paint);
             }
         }
@@ -110,7 +128,7 @@ final class WorkshopView extends View {
     }
     private void drawBall(Canvas c,float x,float y) {
         fill(0x331C4441);c.drawOval(x-13,y+10,x+16,y+18,paint);
-        paint.setShader(new RadialGradient(x-5,y-6,22,new int[]{0xFFFFBE82,0xFFEE794F,0xFFC44C33},null,Shader.TileMode.CLAMP));
+        fill(Color.WHITE);paint.setShader(new RadialGradient(x-5,y-6,22,new int[]{0xFFFFBE82,0xFFEE794F,0xFFC44C33},null,Shader.TileMode.CLAMP));
         c.drawCircle(x,y,(float)PhysicsEngine.RADIUS,paint);paint.setShader(null);
         fill(0xFFFDEACA);c.drawCircle(x-5,y-5,3,paint);
     }

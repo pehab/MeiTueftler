@@ -9,14 +9,43 @@ public final class PhysicsEngineTest {
         return new Level(99,"Test","","","",x,y,950,590,12,2,Collections.emptyList(),Collections.emptyList());
     }
     private static void finish(PhysicsEngine engine) { for(int i=0;i<4800&&engine.state==PhysicsEngine.State.RUNNING;i++)engine.step(); }
-    @Test public void allTenChallengesHaveReachableReferenceSolutions() {
-        assertEquals(10,LevelCatalog.LEVELS.size());
+    @Test public void allChallengesHaveReachableReferenceSolutions() {
+        assertEquals(16,LevelCatalog.LEVELS.size());
         for(Level l:LevelCatalog.LEVELS) {
             assertTrue(l.solution.size()<=l.bonusRamps);
             for(Ramp r:l.solution) { assertEquals(0,r.angle%5,0.001);assertEquals(0,(r.length-160)%40,0.001); }
             PhysicsEngine engine=new PhysicsEngine(l,l.solution);finish(engine);
             assertEquals(l.name,PhysicsEngine.State.WON,engine.state);
         }
+    }
+    @Test public void springChallengesActuallyBounceBeforeWinning() {
+        for(int id:new int[]{10,12,14,15}) {
+            Level l=LevelCatalog.get(id);PhysicsEngine e=new PhysicsEngine(l,l.solution);finish(e);
+            assertEquals(l.name,PhysicsEngine.State.WON,e.state);
+            assertTrue(l.name,e.trampolineBounces>0);
+        }
+    }
+    @Test public void trampolineLaunchesMarbleUpwardAndSnapshotKeepsItsKind() {
+        Ramp spring=new Ramp(500,300,240,0,false,Ramp.Kind.TRAMPOLINE);
+        PhysicsEngine e=new PhysicsEngine(testLevel(500,275),Arrays.asList(spring));e.vy=400;
+        for(int i=0;i<10;i++)e.step();
+        assertEquals(Ramp.Kind.TRAMPOLINE,e.ramps.get(0).kind);
+        assertEquals(1,e.trampolineBounces);assertTrue(e.vy< -350);
+    }
+    @Test public void blockCollidesAtItsThickSurfaceAndStaysWithinBounds() {
+        Ramp block=new Ramp(500,300,240,0,false,Ramp.Kind.BLOCK);
+        PhysicsEngine e=new PhysicsEngine(testLevel(500,250),Arrays.asList(block));e.vy=1200;
+        for(int i=0;i<240;i++)e.step();
+        assertTrue(e.y<=300-PhysicsEngine.RADIUS-block.halfThickness()+0.001);
+        block.x=-100;block.y=700;block.clamp();
+        assertTrue(block.x-Math.abs(block.dx())-block.halfThickness()>=5);
+        assertTrue(block.y+Math.abs(block.dy())+block.halfThickness()<=595);
+    }
+    @Test public void blockCanBeGrabbedAnywhereOnItsSurface() {
+        Ramp block=new Ramp(500,300,240,0,false,Ramp.Kind.BLOCK);
+        assertEquals(0,block.distance(500,322),0);
+        assertEquals(6,block.distance(500,330),0);
+        assertEquals(0,block.distance(620,300),0);
     }
     @Test public void emptyBuildFallsAndCanBeRetried() {
         PhysicsEngine engine=new PhysicsEngine(LevelCatalog.LEVELS.get(0),Collections.emptyList());finish(engine);

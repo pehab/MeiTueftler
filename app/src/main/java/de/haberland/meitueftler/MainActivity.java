@@ -112,10 +112,10 @@ public final class MainActivity extends ComponentActivity {
         WorkshopView hero=new WorkshopView(this,this,true);
         root.addView(hero,new LinearLayout.LayoutParams(-1,0,1));
         LinearLayout choices=row();
-        Button tasks=button("10 Murmel-Aufgaben",true,()->{screen="levels";rebuildScreen();});
+        Button tasks=button(LevelCatalog.LEVELS.size()+" Murmel-Aufgaben",true,()->{screen="levels";rebuildScreen();});
         Button free=button("Freier Bauplatz",false,()->openLevel(-1));
         addEqual(choices,tasks);addEqual(choices,free);root.addView(choices);
-        TextView footer=text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   "+totalStars()+" / 30 Sterne",13,false);
+        TextView footer=text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   "+totalStars()+" / "+(LevelCatalog.LEVELS.size()*3)+" Sterne",13,false);
         footer.setPadding(0,dp(10),0,0);root.addView(footer);
     }
     private static String symbols(char symbol,int count) { StringBuilder value=new StringBuilder();for(int i=0;i<count;i++)value.append(symbol);return value.toString(); }
@@ -150,8 +150,9 @@ public final class MainActivity extends ComponentActivity {
         body.addView(board,landscape?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));
         ScrollView scroll=new ScrollView(this);LinearLayout tools=column();tools.setPadding(dp(10),dp(4),dp(4),dp(4));
         TextView task=text(current.task,15,false);task.setPadding(0,0,0,dp(8));tools.addView(task);
-        selectionText=text("Tippe ein Brett an.",13,true);selectionText.setTextColor(TEAL);tools.addView(selectionText);
-        toolRow(tools,editButton("＋ Brett",this::addRamp),editButton("↶ Zurück",this::undo));
+        selectionText=text("Tippe ein Bauteil an.",13,true);selectionText.setTextColor(TEAL);tools.addView(selectionText);
+        toolRow(tools,editButton("＋ Brett",()->addElement(Ramp.Kind.PLANK)),editButton("↶ Zurück",this::undo));
+        toolRow(tools,editButton("＋ Trampolin",()->addElement(Ramp.Kind.TRAMPOLINE)),editButton("＋ Block",()->addElement(Ramp.Kind.BLOCK)));
         toolRow(tools,editButton("↶ Drehen",()->changeRamp(-5,0)),editButton("Drehen ↷",()->changeRamp(5,0)));
         toolRow(tools,editButton("− Kürzer",()->changeRamp(0,-40)),editButton("＋ Länger",()->changeRamp(0,40)));
         toolRow(tools,editButton("Entfernen",this::removeRamp),editButton("Neu bauen",this::clearBuild));
@@ -159,7 +160,7 @@ public final class MainActivity extends ComponentActivity {
         soundButton=button(sound?"Ton: an":"Ton: aus",false,()->{sound=!sound;prefs.edit().putBoolean("sound",sound).apply();updateControls();});
         toolRow(tools,hintButton,soundButton);
         runButton=button("▶ Ausprobieren",true,this::toggleSimulation);LinearLayout.LayoutParams runLp=new LinearLayout.LayoutParams(-1,dp(56));runLp.setMargins(0,dp(6),0,dp(6));if(landscape)tools.addView(runButton,runLp);
-        statusText=text("Brett antippen und mit dem Finger verschieben.",13,false);tools.addView(statusText);
+        statusText=text("Bauteil antippen und verschieben. Trampoline federn, Blöcke lenken um.",13,false);tools.addView(statusText);
         scroll.addView(tools);body.addView(scroll,landscape?new LinearLayout.LayoutParams(dp(244),-1):new LinearLayout.LayoutParams(-1,dp(246)));
         root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
         if(!landscape)root.addView(runButton,runLp);
@@ -170,19 +171,19 @@ public final class MainActivity extends ComponentActivity {
     private Button editButton(String label,Runnable action) { Button b=button(label,false,action);editButtons.add(b);return b; }
     void rememberBuild() { history.addLast(encodeBuild());while(history.size()>30)history.removeFirst(); }
     void constructionChanged() { saveBuild();updateControls();if(board!=null)board.invalidate(); }
-    private void addRamp() {
-        if(build.size()>=current.maxRamps) { Toast.makeText(this,"Alle Bretter sind im Einsatz. Verschiebe oder entferne eines.",Toast.LENGTH_SHORT).show();return; }
-        rememberBuild();build.add(new Ramp(500,300,480,20,false));selected=build.size()-1;constructionChanged();
+    private void addElement(Ramp.Kind kind) {
+        if(build.size()>=current.maxRamps) { Toast.makeText(this,"Alle Bauteile sind im Einsatz. Verschiebe oder entferne eines.",Toast.LENGTH_SHORT).show();return; }
+        rememberBuild();build.add(new Ramp(500,300,kind==Ramp.Kind.PLANK?480:160,kind==Ramp.Kind.PLANK?20:0,false,kind));selected=build.size()-1;constructionChanged();
     }
     private void changeRamp(int angle,int length) {
-        if(selected<0||selected>=build.size()) { Toast.makeText(this,"Tippe zuerst ein Brett an.",Toast.LENGTH_SHORT).show();return; }
+        if(selected<0||selected>=build.size()) { Toast.makeText(this,"Tippe zuerst ein Bauteil an.",Toast.LENGTH_SHORT).show();return; }
         rememberBuild();Ramp r=build.get(selected);r.angle=Math.max(-85,Math.min(85,r.angle+angle));r.length=Math.max(160,Math.min(560,r.length+length));r.clamp();constructionChanged();
     }
     private void removeRamp() { if(selected<0||selected>=build.size())return;rememberBuild();build.remove(selected);selected=-1;constructionChanged(); }
     private void undo() { if(history.isEmpty())return;decodeBuild(history.removeLast());selected=-1;constructionChanged(); }
     private void clearBuild() {
         if(build.isEmpty())return;
-        new AlertDialog.Builder(this).setTitle("Neu bauen?").setMessage("Die Bretter entfernen und mit einer neuen Idee anfangen?")
+        new AlertDialog.Builder(this).setTitle("Neu bauen?").setMessage("Die Bauteile entfernen und mit einer neuen Idee anfangen?")
             .setNegativeButton("Behalten",null).setPositiveButton("Neu bauen",(d,w)->{rememberBuild();build.clear();selected=-1;constructionChanged();}).show();
     }
     private void toggleSimulation() {
@@ -196,9 +197,9 @@ public final class MainActivity extends ComponentActivity {
             int stars=1+(build.size()<=current.bonusRamps?1:0)+(!hintUsed?1:0);
             if(!current.sandbox())prefs.edit().putInt("stars_"+current.id,Math.max(stars,prefs.getInt("stars_"+current.id,0))).apply();
             AlertDialog.Builder dialog=new AlertDialog.Builder(this).setTitle(current.sandbox()?"Deine Maschine funktioniert!":"Geschafft!  "+symbols('★',stars))
-                .setMessage(current.discovery+(current.sandbox()?"":"\n\nExtra-Sterne: höchstens "+current.bonusRamps+" Bretter und ohne Hinweis lösen."))
+                .setMessage(current.discovery+(current.sandbox()?"":"\n\nExtra-Sterne: höchstens "+current.bonusRamps+" "+(current.bonusRamps==1?"Bauteil":"Bauteile")+" und ohne Hinweis lösen."))
                 .setPositiveButton("Weiter tüfteln",(d,w)->toggleSimulation());
-            if(!current.sandbox()&&current.id<9)dialog.setNegativeButton("Nächste Aufgabe",(d,w)->openLevel(current.id+1));
+            if(!current.sandbox()&&current.id<LevelCatalog.LEVELS.size()-1)dialog.setNegativeButton("Nächste Aufgabe",(d,w)->openLevel(current.id+1));
             dialog.setOnCancelListener(d->{if(engine!=null)toggleSimulation();});dialog.show();
         }
     }
@@ -209,18 +210,18 @@ public final class MainActivity extends ComponentActivity {
         for(Button b:editButtons){b.setEnabled(editing);b.setAlpha(editing?1f:0.45f);}
         hintButton.setEnabled(editing);hintButton.setText(hintVisible?"Hinweis aus":"Hinweis");soundButton.setText(sound?"Ton: an":"Ton: aus");
         runButton.setText(editing?"▶ Ausprobieren":"↶ Weiterbauen");
-        String label="Bretter: "+build.size()+" / "+current.maxRamps;
-        if(selected>=0&&selected<build.size()) { Ramp r=build.get(selected);label="Brett "+(selected+1)+" · "+(int)r.angle+"° · "+(int)r.length; }
+        String label="Bauteile: "+build.size()+" / "+current.maxRamps;
+        if(selected>=0&&selected<build.size()) { Ramp r=build.get(selected);label=r.label()+" "+(selected+1)+" · "+(int)r.angle+"° · "+(int)r.length; }
         selectionText.setText(label);
         if(hintVisible)statusText.setText(current.hint);
-        else if(engine==null)statusText.setText("Brett antippen und mit dem Finger verschieben.");
-        else if(engine.state==PhysicsEngine.State.RETRY)statusText.setText("Noch nicht im Korb? Verändere ein Brett und probiere es wieder.");
+        else if(engine==null)statusText.setText("Bauteil antippen und verschieben. Trampoline federn, Blöcke lenken um.");
+        else if(engine.state==PhysicsEngine.State.RETRY)statusText.setText("Noch nicht im Korb? Verändere ein Bauteil und probiere es wieder.");
         else if(engine.state==PhysicsEngine.State.WON)statusText.setText("Deine Idee hat funktioniert!");
-        else statusText.setText("Beobachte die Murmel. Was passiert am Brettende?");
+        else statusText.setText("Beobachte die Murmel. Was passiert am nächsten Bauteil?");
     }
     private String encodeBuild() {
         JSONArray array=new JSONArray();
-        for(Ramp r:build)try { JSONObject o=new JSONObject();o.put("x",r.x);o.put("y",r.y);o.put("length",r.length);o.put("angle",r.angle);array.put(o); }catch(JSONException ignored){}
+        for(Ramp r:build)try { JSONObject o=new JSONObject();o.put("x",r.x);o.put("y",r.y);o.put("length",r.length);o.put("angle",r.angle);o.put("kind",r.kind.name());array.put(o); }catch(JSONException ignored){}
         return array.toString();
     }
     private void decodeBuild(String json) {
@@ -228,7 +229,9 @@ public final class MainActivity extends ComponentActivity {
         try { JSONArray array=new JSONArray(json);for(int i=0;i<Math.min(array.length(),current.maxRamps);i++) {
             JSONObject o=array.getJSONObject(i);double x=o.getDouble("x"),y=o.getDouble("y"),length=o.getDouble("length"),angle=o.getDouble("angle");
             if(!Double.isFinite(x)||!Double.isFinite(y)||!Double.isFinite(length)||!Double.isFinite(angle))continue;
-            Ramp r=new Ramp(x,y,Math.max(160,Math.min(560,length)),Math.max(-85,Math.min(85,angle)),false);r.clamp();build.add(r);
+            Ramp.Kind kind=Ramp.Kind.PLANK;
+            try { kind=Ramp.Kind.valueOf(o.optString("kind","PLANK")); }catch(IllegalArgumentException ignored){}
+            Ramp r=new Ramp(x,y,Math.max(160,Math.min(560,length)),Math.max(-85,Math.min(85,angle)),false,kind);r.clamp();build.add(r);
         }}catch(JSONException ignored){build.clear();}
     }
     private void saveBuild() { if(current!=null&&prefs!=null)prefs.edit().putString("build_"+current.id,encodeBuild()).apply(); }

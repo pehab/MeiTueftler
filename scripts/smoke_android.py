@@ -1,4 +1,5 @@
 """Exercise the release APK using Android's accessibility tree, not fixed screen coordinates."""
+import json
 import re
 import subprocess
 import time
@@ -44,7 +45,7 @@ def screenshot(name):
 
 
 def open_first_level():
-    tap("10 Murmel-Aufgaben")
+    tap("16 Murmel-Aufgaben")
     node("  Deine Murmel-Aufgaben")
     tap("1 · Die erste Rampe")
     node("Baufläche", "content-desc")
@@ -58,7 +59,7 @@ adb("shell", "pm", "clear", PACKAGE)
 adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
 node("MeiTüftler")
 screenshot("menu")
-tap("10 Murmel-Aufgaben")
+tap("16 Murmel-Aufgaben")
 node("  Deine Murmel-Aufgaben")
 screenshot("levels")
 tap("1 · Die erste Rampe")
@@ -82,10 +83,20 @@ tap("Weiter tüfteln")
 node("Brett 1 · 20° · 520")
 time.sleep(1)
 adb("shell", "am", "force-stop", PACKAGE)
+# A 0.1.0 build has no kind field. Its construction and stars must survive the migration.
+legacy = ET.fromstring(adb("shell", "run-as", PACKAGE, "cat", "shared_prefs/workshop.xml"))
+for entry in legacy.findall("string"):
+    if entry.get("name") == "build_0":
+        old_build = json.loads(entry.text)
+        for piece in old_build:
+            piece.pop("kind", None)
+        entry.text = json.dumps(old_build)
+subprocess.run(["adb", "shell", "run-as", PACKAGE, "tee", "shared_prefs/workshop.xml"],
+               input=ET.tostring(legacy), stdout=subprocess.DEVNULL, check=True)
 adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
-node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   3 / 30 Sterne")
+node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   3 / 48 Sterne")
 open_first_level()
-node("Bretter: 1 / 3")
+node("Bauteile: 1 / 3")
 screenshot("restored")
 adb("shell", "wm", "size", "800x1280")
 node("Baufläche", "content-desc")
@@ -95,7 +106,57 @@ screenshot("portrait")
 adb("shell", "input", "keyevent", "4")
 node("MeiTüftler")
 assert adb("shell", "pidof", PACKAGE).strip()
+# The second toolbox must be usable, not merely drawn on screen.
+adb("shell", "wm", "size", "1280x800")
+tap("16 Murmel-Aufgaben")
+for _ in range(5):
+    if any(i.get("text", "").startswith("11 · Hoch hinaus") for i in tree().iter("node")):
+        break
+    adb("shell", "input", "swipe", "600", "660", "600", "250", "500")
+tap("11 · Hoch hinaus")
+board = node("Baufläche", "content-desc")
+tap("＋ Trampolin")
+node("Trampolin 1 · 0° · 160")
+tap("＋ Länger")
+tap("＋ Länger")
+for _ in range(3):
+    tap("Drehen ↷")
+node("Trampolin 1 · 15° · 240")
+x1, y1, x2, y2 = map(int, re.findall(r"\d+", board.get("bounds")))
+scale = min((x2-x1-12)/1000, (y2-y1-12)/600)
+ox = x1 + (x2-x1-1000*scale)/2
+oy = y1 + (y2-y1-600*scale)/2
+coords = [round(ox+500*scale), round(oy+300*scale), round(ox+220*scale), round(oy+400*scale)]
+adb("shell", "input", "swipe", *map(str, coords), "650")
+screenshot("spring-built")
+tap("▶ Ausprobieren")
+node("Geschafft!", timeout=20)
+screenshot("spring-solved")
+tap("Weiter tüfteln")
+tap("‹ Menü")
+tap("Freier Bauplatz")
+tap("＋ Trampolin")
+tap("＋ Block")
+node("Block 2 · 0° · 160")
+tap("Drehen ↷")
+tap("＋ Länger")
+node("Block 2 · 5° · 200")
+screenshot("new-toolbox")
+tap("↶ Zurück")
+node("Bauteile: 2 / 20")
+tap("‹ Menü")
+time.sleep(1)
+adb("shell", "am", "force-stop", PACKAGE)
+adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
+node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   6 / 48 Sterne")
+tap("Freier Bauplatz")
+node("Bauteile: 2 / 20")
+board = node("Baufläche", "content-desc")
+x1, y1, x2, y2 = map(int, re.findall(r"\d+", board.get("bounds")))
+adb("shell", "input", "tap", str((x1+x2)//2), str((y1+y2)//2))
+node("Block 2 · 5° · 160")
+screenshot("new-elements-restored")
 log = adb("logcat", "-d", "-b", "crash")
 (OUTPUT / "crash.log").write_text(log)
 assert "FATAL EXCEPTION" not in log, log
-print("PASS: menus, drag, resize, solve, persistence, portrait rotation and system Back")
+print("PASS: original puzzle, trampoline puzzle, new toolbox, typed persistence, legacy builds, undo, rotation and Back")

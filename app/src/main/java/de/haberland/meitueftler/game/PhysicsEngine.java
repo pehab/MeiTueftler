@@ -7,6 +7,7 @@ public final class PhysicsEngine {
     public static final double STEP=1.0/240, RADIUS=14, CONTACT=19;
     public enum State { RUNNING, WON, RETRY }
     public double x,y,vx,vy,time;
+    public int trampolineBounces;
     public State state=State.RUNNING;
     public final List<Ramp> ramps=new ArrayList<>();
     private final Level level;
@@ -34,12 +35,20 @@ public final class PhysicsEngine {
         double ax=r.x-r.dx(),ay=r.y-r.dy(),bx=r.x+r.dx(),by=r.y+r.dy();
         double t=Math.max(0,Math.min(1,((x-ax)*(bx-ax)+(y-ay)*(by-ay))/(r.length*r.length)));
         double nx=x-ax-t*(bx-ax),ny=y-ay-t*(by-ay),distance=Math.hypot(nx,ny);
-        if(distance>=CONTACT) return;
+        double contact=RADIUS+r.halfThickness();
+        if(distance>=contact) return;
         if(distance<0.000001) { nx=Math.sin(Math.toRadians(r.angle));ny=-Math.cos(Math.toRadians(r.angle)); }
         else { nx/=distance;ny/=distance; }
-        x+=nx*(CONTACT-distance);y+=ny*(CONTACT-distance);
+        x+=nx*(contact-distance);y+=ny*(contact-distance);
         double normal=vx*nx+vy*ny;
-        if(normal<0) { vx-=1.12*normal*nx;vy-=1.12*normal*ny; }
+        if(normal<0) {
+            if(r.kind==Ramp.Kind.TRAMPOLINE && normal< -30) {
+                // A spring adds energy; a resting marble must not be kicked on every solver pass.
+                double rebound=Math.min(850,Math.max(380,-normal*1.05));
+                vx+=(rebound-normal)*nx;vy+=(rebound-normal)*ny;
+                trampolineBounces++;
+            } else { vx-=1.12*normal*nx;vy-=1.12*normal*ny; }
+        }
         // Rolling loss, rather than killing the tangential motion on contact.
         double tangent=-vx*ny+vy*nx;
         vx+=0.0012*tangent*ny;vy-=0.0012*tangent*nx;

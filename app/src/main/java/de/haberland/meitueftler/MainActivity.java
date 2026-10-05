@@ -17,6 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.Button;
+import android.widget.EditText;
+import android.text.InputFilter;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -39,6 +41,8 @@ public final class MainActivity extends ComponentActivity {
     boolean hintVisible, hintUsed, paused;
     private boolean sound=true, finishedHandled;
     private String screen="menu";
+    private String inventionId;
+    private Button powerButton;
     private SharedPreferences prefs;
     private final Deque<String> history=new ArrayDeque<>();
     private WorkshopView board;
@@ -62,6 +66,7 @@ public final class MainActivity extends ComponentActivity {
             current=LevelCatalog.get(state.getInt("level"));
             decodeBuild(state.getString("build","[]"));
             hintUsed=state.getBoolean("hintUsed");
+            inventionId=state.getString("inventionId");
             screen="game";
         }
         rebuildScreen();
@@ -69,7 +74,7 @@ public final class MainActivity extends ComponentActivity {
     @Override public void onConfigurationChanged(Configuration config) { super.onConfigurationChanged(config);rebuildScreen(); }
     @Override protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
-        if(current!=null && screen.equals("game")) { out.putInt("level",current.id);out.putString("build",encodeBuild());out.putBoolean("hintUsed",hintUsed); }
+        if(current!=null && screen.equals("game")) { out.putInt("level",current.id);out.putString("build",encodeBuild());out.putBoolean("hintUsed",hintUsed);out.putString("inventionId",inventionId); }
     }
     @Override protected void onPause() { paused=true;saveBuild();super.onPause(); }
     @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing(); }
@@ -103,7 +108,7 @@ public final class MainActivity extends ComponentActivity {
             return insets;
         });
         root.requestApplyInsets();
-        if(screen.equals("game")) showWorkshop(); else if(screen.equals("levels")) showLevels();else showMenu();
+        if(screen.equals("game")) showWorkshop(); else if(screen.equals("levels")) showLevels();else if(screen.equals("inventions"))showInventions();else showMenu();
     }
     private void showMenu() {
         TextView eyebrow=text("BAUEN · TESTEN · STAUNEN",12,true);eyebrow.setTextColor(TEAL);root.addView(eyebrow);
@@ -115,6 +120,8 @@ public final class MainActivity extends ComponentActivity {
         Button tasks=button(LevelCatalog.LEVELS.size()+" Murmel-Aufgaben",true,()->{screen="levels";rebuildScreen();});
         Button free=button("Freier Bauplatz",false,()->openLevel(-1));
         addEqual(choices,tasks);addEqual(choices,free);root.addView(choices);
+        Button gallery=button("Meine Erfindungen",false,()->{screen="inventions";rebuildScreen();});
+        root.addView(gallery,new LinearLayout.LayoutParams(-1,dp(48)));
         TextView footer=text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   "+totalStars()+" / "+(LevelCatalog.LEVELS.size()*3)+" Sterne",13,false);
         footer.setPadding(0,dp(10),0,0);root.addView(footer);
     }
@@ -137,13 +144,15 @@ public final class MainActivity extends ComponentActivity {
         scroll.addView(grid);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     }
     private void openLevel(int id) {
-        saveBuild();current=LevelCatalog.get(id);engine=null;selected=-1;history.clear();hintUsed=false;hintVisible=false;finishedHandled=false;
+        saveBuild();inventionId=null;current=LevelCatalog.get(id);engine=null;selected=-1;history.clear();hintUsed=false;hintVisible=false;finishedHandled=false;
         decodeBuild(prefs.getString("build_"+id,"[]"));screen="game";rebuildScreen();
     }
     private void showWorkshop() {
         LinearLayout header=row();header.addView(button("‹ Menü",false,this::goBack));
-        TextView title=text("  "+(current.sandbox()?"":(current.id+1)+" · ")+current.name,21,true);
-        title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,dp(52),1));root.addView(header);
+        TextView title=text("  "+(current.sandbox()?"":(current.id+1)+" · ")+(current.sandbox()?inventionName():current.name),21,true);
+        title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,dp(52),1));
+        if(current.sandbox())header.addView(button("Speichern",false,this::saveInventionDialog));
+        root.addView(header);
         boolean landscape=getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE;
         LinearLayout body=new LinearLayout(this);body.setOrientation(landscape?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);
         board=new WorkshopView(this,this,false);
@@ -153,6 +162,8 @@ public final class MainActivity extends ComponentActivity {
         selectionText=text("Tippe ein Bauteil an.",13,true);selectionText.setTextColor(TEAL);tools.addView(selectionText);
         toolRow(tools,editButton("＋ Brett",()->addElement(Ramp.Kind.PLANK)),editButton("↶ Zurück",this::undo));
         toolRow(tools,editButton("＋ Trampolin",()->addElement(Ramp.Kind.TRAMPOLINE)),editButton("＋ Block",()->addElement(Ramp.Kind.BLOCK)));
+        powerButton=editButton("Stärke: mittel",this::cyclePower);
+        toolRow(tools,editButton("＋ Ventilator",()->addElement(Ramp.Kind.FAN)),powerButton);
         toolRow(tools,editButton("↶ Drehen",()->changeRamp(-5,0)),editButton("Drehen ↷",()->changeRamp(5,0)));
         toolRow(tools,editButton("− Kürzer",()->changeRamp(0,-40)),editButton("＋ Länger",()->changeRamp(0,40)));
         toolRow(tools,editButton("Entfernen",this::removeRamp),editButton("Neu bauen",this::clearBuild));
@@ -160,7 +171,7 @@ public final class MainActivity extends ComponentActivity {
         soundButton=button(sound?"Ton: an":"Ton: aus",false,()->{sound=!sound;prefs.edit().putBoolean("sound",sound).apply();updateControls();});
         toolRow(tools,hintButton,soundButton);
         runButton=button("▶ Ausprobieren",true,this::toggleSimulation);LinearLayout.LayoutParams runLp=new LinearLayout.LayoutParams(-1,dp(56));runLp.setMargins(0,dp(6),0,dp(6));if(landscape)tools.addView(runButton,runLp);
-        statusText=text("Bauteil antippen und verschieben. Trampoline federn, Blöcke lenken um.",13,false);tools.addView(statusText);
+        statusText=text("Bauteil antippen und verschieben. Luftkegel zeigt die Blasrichtung.",13,false);tools.addView(statusText);
         scroll.addView(tools);body.addView(scroll,landscape?new LinearLayout.LayoutParams(dp(244),-1):new LinearLayout.LayoutParams(-1,dp(246)));
         root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
         if(!landscape)root.addView(runButton,runLp);
@@ -173,11 +184,17 @@ public final class MainActivity extends ComponentActivity {
     void constructionChanged() { saveBuild();updateControls();if(board!=null)board.invalidate(); }
     private void addElement(Ramp.Kind kind) {
         if(build.size()>=current.maxRamps) { Toast.makeText(this,"Alle Bauteile sind im Einsatz. Verschiebe oder entferne eines.",Toast.LENGTH_SHORT).show();return; }
-        rememberBuild();build.add(new Ramp(500,300,kind==Ramp.Kind.PLANK?480:160,kind==Ramp.Kind.PLANK?20:0,false,kind));selected=build.size()-1;constructionChanged();
+        rememberBuild();build.add(new Ramp(500,300,kind==Ramp.Kind.PLANK?480:kind==Ramp.Kind.FAN?320:160,kind==Ramp.Kind.PLANK?20:kind==Ramp.Kind.FAN?-60:0,false,kind));selected=build.size()-1;constructionChanged();
     }
     private void changeRamp(int angle,int length) {
         if(selected<0||selected>=build.size()) { Toast.makeText(this,"Tippe zuerst ein Bauteil an.",Toast.LENGTH_SHORT).show();return; }
-        rememberBuild();Ramp r=build.get(selected);r.angle=Math.max(-85,Math.min(85,r.angle+angle));r.length=Math.max(160,Math.min(560,r.length+length));r.clamp();constructionChanged();
+        rememberBuild();Ramp r=build.get(selected);r.angle=r.kind==Ramp.Kind.FAN?Ramp.normalizeAngle(r.angle+angle):Math.max(-85,Math.min(85,r.angle+angle));r.length=Math.max(160,Math.min(560,r.length+length));r.clamp();constructionChanged();
+    }
+    private void cyclePower() {
+        if(selected<0||selected>=build.size()||build.get(selected).kind!=Ramp.Kind.FAN) {
+            Toast.makeText(this,"Tippe zuerst einen Ventilator an.",Toast.LENGTH_SHORT).show();return;
+        }
+        rememberBuild();Ramp r=build.get(selected);r.power=r.power%3+1;constructionChanged();
     }
     private void removeRamp() { if(selected<0||selected>=build.size())return;rememberBuild();build.remove(selected);selected=-1;constructionChanged(); }
     private void undo() { if(history.isEmpty())return;decodeBuild(history.removeLast());selected=-1;constructionChanged(); }
@@ -212,16 +229,19 @@ public final class MainActivity extends ComponentActivity {
         runButton.setText(editing?"▶ Ausprobieren":"↶ Weiterbauen");
         String label="Bauteile: "+build.size()+" / "+current.maxRamps;
         if(selected>=0&&selected<build.size()) { Ramp r=build.get(selected);label=r.label()+" "+(selected+1)+" · "+(int)r.angle+"° · "+(int)r.length; }
+        boolean fanSelected=selected>=0&&selected<build.size()&&build.get(selected).kind==Ramp.Kind.FAN;
+        powerButton.setText(fanSelected?"Stärke: "+build.get(selected).powerLabel():"Stärke wählen");
+        powerButton.setEnabled(editing&&fanSelected);powerButton.setAlpha(editing&&fanSelected?1f:0.45f);
         selectionText.setText(label);
         if(hintVisible)statusText.setText(current.hint);
-        else if(engine==null)statusText.setText("Bauteil antippen und verschieben. Trampoline federn, Blöcke lenken um.");
+        else if(engine==null)statusText.setText("Bauteil antippen und verschieben. Luftkegel zeigt die Blasrichtung.");
         else if(engine.state==PhysicsEngine.State.RETRY)statusText.setText("Noch nicht im Korb? Verändere ein Bauteil und probiere es wieder.");
         else if(engine.state==PhysicsEngine.State.WON)statusText.setText("Deine Idee hat funktioniert!");
         else statusText.setText("Beobachte die Murmel. Was passiert am nächsten Bauteil?");
     }
     private String encodeBuild() {
         JSONArray array=new JSONArray();
-        for(Ramp r:build)try { JSONObject o=new JSONObject();o.put("x",r.x);o.put("y",r.y);o.put("length",r.length);o.put("angle",r.angle);o.put("kind",r.kind.name());array.put(o); }catch(JSONException ignored){}
+        for(Ramp r:build)try { JSONObject o=new JSONObject();o.put("x",r.x);o.put("y",r.y);o.put("length",r.length);o.put("angle",r.angle);o.put("kind",r.kind.name());o.put("power",r.power);array.put(o); }catch(JSONException ignored){}
         return array.toString();
     }
     private void decodeBuild(String json) {
@@ -231,8 +251,71 @@ public final class MainActivity extends ComponentActivity {
             if(!Double.isFinite(x)||!Double.isFinite(y)||!Double.isFinite(length)||!Double.isFinite(angle))continue;
             Ramp.Kind kind=Ramp.Kind.PLANK;
             try { kind=Ramp.Kind.valueOf(o.optString("kind","PLANK")); }catch(IllegalArgumentException ignored){}
-            Ramp r=new Ramp(x,y,Math.max(160,Math.min(560,length)),Math.max(-85,Math.min(85,angle)),false,kind);r.clamp();build.add(r);
+            Ramp r=new Ramp(x,y,Math.max(160,Math.min(560,length)),kind==Ramp.Kind.FAN?Ramp.normalizeAngle(angle):Math.max(-85,Math.min(85,angle)),false,kind);
+            r.power=Math.max(1,Math.min(3,o.optInt("power",2)));r.clamp();build.add(r);
         }}catch(JSONException ignored){build.clear();}
+    }
+    private JSONArray inventions() {
+        try { return new JSONArray(prefs.getString("inventions","[]")); }catch(JSONException ignored){return new JSONArray();}
+    }
+    private String inventionName() {
+        JSONArray saved=inventions();
+        for(int i=0;i<saved.length();i++){JSONObject item=saved.optJSONObject(i);if(item!=null&&item.optString("id").equals(inventionId))return item.optString("name",current.name);}
+        return current.name;
+    }
+    private void showInventions() {
+        LinearLayout header=row();header.addView(button("‹ Zurück",false,this::goBack));
+        header.addView(text("  Meine Erfindungen",24,true));root.addView(header);
+        TextView intro=text("Deine Maschinen zum Weiterbauen. Speichere sie im freien Bauplatz.",16,false);
+        intro.setPadding(0,dp(12),0,dp(12));root.addView(intro);
+        ScrollView scroll=new ScrollView(this);LinearLayout list=column();JSONArray saved=inventions();
+        if(saved.length()==0)list.addView(text("Hier ist Platz für deine erste Erfindung!",18,true));
+        for(int i=0;i<saved.length();i++) {
+            JSONObject item=saved.optJSONObject(i);if(item==null)continue;
+            LinearLayout line=row();Button load=button(item.optString("name","Meine Maschine"),false,()->loadInvention(item));
+            line.addView(load,new LinearLayout.LayoutParams(0,dp(64),1));
+            Button remove=button("Löschen",false,()->deleteInvention(item.optString("id"),item.optString("name")));
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(96),dp(52));lp.setMargins(dp(8),0,0,0);line.addView(remove,lp);
+            LinearLayout.LayoutParams lineLp=new LinearLayout.LayoutParams(-1,dp(76));list.addView(line,lineLp);
+        }
+        scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+        root.addView(button("Zum freien Bauplatz",true,()->openLevel(-1)),new LinearLayout.LayoutParams(-1,dp(56)));
+    }
+    private void loadInvention(JSONObject item) {
+        saveBuild();current=LevelCatalog.SANDBOX;engine=null;selected=-1;history.clear();hintUsed=false;hintVisible=false;finishedHandled=false;
+        inventionId=item.optString("id");decodeBuild(item.optString("build","[]"));saveBuild();screen="game";rebuildScreen();
+    }
+    private void saveInventionDialog() {
+        if(engine!=null){Toast.makeText(this,"Tippe zuerst auf Weiterbauen.",Toast.LENGTH_SHORT).show();return;}
+        JSONArray saved=inventions();String name="Meine Maschine "+(saved.length()+1);boolean replacing=false;
+        for(int i=0;i<saved.length();i++){JSONObject item=saved.optJSONObject(i);if(item!=null&&item.optString("id").equals(inventionId)){name=item.optString("name");replacing=true;break;}}
+        EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);input.setSelectAllOnFocus(true);
+        input.setContentDescription("Name der Erfindung");input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(40)});
+        input.setPadding(dp(16),dp(12),dp(16),dp(12));
+        AlertDialog.Builder dialog=new AlertDialog.Builder(this).setTitle("Erfindung speichern").setView(input)
+            .setNegativeButton("Abbrechen",null).setPositiveButton(replacing?"Aktualisieren":"Speichern",(d,w)->storeInvention(input.getText().toString(),false));
+        if(replacing)dialog.setNeutralButton("Als Kopie",(d,w)->storeInvention(input.getText().toString(),true));
+        dialog.show();
+    }
+    private void storeInvention(String name,boolean copy) {
+        name=name.trim();if(name.isEmpty()){Toast.makeText(this,"Gib deiner Erfindung einen Namen.",Toast.LENGTH_SHORT).show();return;}
+        if(copy&&name.equals(inventionName()))name=name.substring(0,Math.min(32,name.length()))+" (Kopie)";
+        JSONArray saved=inventions();String id=copy||inventionId==null?java.util.UUID.randomUUID().toString():inventionId;
+        boolean replaced=false;
+        try {
+            JSONObject item=new JSONObject();item.put("id",id);item.put("name",name);item.put("build",encodeBuild());
+            for(int i=0;i<saved.length();i++){JSONObject old=saved.optJSONObject(i);if(old!=null&&old.optString("id").equals(id)){saved.put(i,item);replaced=true;break;}}
+            if(!replaced){if(saved.length()>=20){Toast.makeText(this,"20 Erfindungen gespeichert. Öffne eine zum Aktualisieren oder lösche eine in der Galerie.",Toast.LENGTH_LONG).show();return;}saved.put(item);}
+            prefs.edit().putString("inventions",saved.toString()).apply();inventionId=id;
+            Toast.makeText(this,"Erfindung gespeichert",Toast.LENGTH_SHORT).show();rebuildScreen();
+        }catch(JSONException ignored){Toast.makeText(this,"Speichern hat nicht geklappt.",Toast.LENGTH_SHORT).show();}
+    }
+    private void deleteInvention(String id,String name) {
+        new AlertDialog.Builder(this).setTitle("Erfindung löschen?").setMessage(name+" aus der Galerie entfernen?")
+            .setNegativeButton("Behalten",null).setPositiveButton("Löschen",(d,w)->{
+                JSONArray saved=inventions();for(int i=saved.length()-1;i>=0;i--){JSONObject item=saved.optJSONObject(i);if(item!=null&&item.optString("id").equals(id))saved.remove(i);}
+                prefs.edit().putString("inventions",saved.toString()).apply();rebuildScreen();
+            }).show();
     }
     private void saveBuild() { if(current!=null&&prefs!=null)prefs.edit().putString("build_"+current.id,encodeBuild()).apply(); }
 }

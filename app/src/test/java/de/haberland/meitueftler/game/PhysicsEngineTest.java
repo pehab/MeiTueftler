@@ -10,13 +10,44 @@ public final class PhysicsEngineTest {
     }
     private static void finish(PhysicsEngine engine) { for(int i=0;i<4800&&engine.state==PhysicsEngine.State.RUNNING;i++)engine.step(); }
     @Test public void allChallengesHaveReachableReferenceSolutions() {
-        assertEquals(16,LevelCatalog.LEVELS.size());
+        assertEquals(20,LevelCatalog.LEVELS.size());
         for(Level l:LevelCatalog.LEVELS) {
             assertTrue(l.solution.size()<=l.bonusRamps);
             for(Ramp r:l.solution) { assertEquals(0,r.angle%5,0.001);assertEquals(0,(r.length-160)%40,0.001); }
             PhysicsEngine engine=new PhysicsEngine(l,l.solution);finish(engine);
             assertEquals(l.name,PhysicsEngine.State.WON,engine.state);
         }
+    }
+    @Test public void fanChallengesActuallyUseWindBeforeWinning() {
+        for(int id=16;id<20;id++) {
+            Level l=LevelCatalog.get(id);PhysicsEngine e=new PhysicsEngine(l,l.solution);finish(e);
+            assertEquals(l.name,PhysicsEngine.State.WON,e.state);assertTrue(l.name,e.windSteps>0);
+        }
+    }
+    @Test public void windOnlyActsInTheVisibleForwardCone() {
+        Ramp fan=new Ramp(500,300,240,0,false,Ramp.Kind.FAN);
+        assertTrue(fan.windWeight(600,300)>0);
+        assertEquals(0,fan.windWeight(450,300),0);
+        assertEquals(0,fan.windWeight(600,450),0);
+        assertEquals(0,fan.windWeight(800,300),0);
+        fan.angle=-90;assertTrue(fan.windWeight(500,200)>0);
+        assertEquals(0,fan.windWeight(500,400),0);
+    }
+    @Test public void strongerWindGivesMorePushAndCopiesKeepStrength() {
+        Ramp weak=new Ramp(500,300,320,0,false,Ramp.Kind.FAN);weak.power=1;
+        Ramp strong=weak.copy();strong.power=3;
+        PhysicsEngine a=new PhysicsEngine(testLevel(600,300),Arrays.asList(weak));
+        PhysicsEngine b=new PhysicsEngine(testLevel(600,300),Arrays.asList(strong));
+        for(int i=0;i<30;i++){a.step();b.step();}
+        assertTrue(b.vx>a.vx);assertEquals(3,b.ramps.get(0).power);
+        strong.power=1;assertEquals(3,b.ramps.get(0).power);
+    }
+    @Test public void fanBodyBlocksFastMarblesButAirCanBeCrossed() {
+        Ramp fan=new Ramp(500,300,320,0,false,Ramp.Kind.FAN);
+        PhysicsEngine e=new PhysicsEngine(testLevel(500,245),Arrays.asList(fan));e.vy=1200;
+        for(int i=0;i<10;i++)e.step();assertTrue(e.y<=300-PhysicsEngine.RADIUS-32+0.001);
+        assertTrue(fan.distance(500,300)==0);assertTrue(fan.distance(600,300)>30);
+        assertEquals(-175,Ramp.normalizeAngle(185),0);
     }
     @Test public void springChallengesActuallyBounceBeforeWinning() {
         for(int id:new int[]{10,12,14,15}) {

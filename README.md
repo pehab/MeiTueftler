@@ -2,7 +2,7 @@
 
 Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Murmeln, Holzrampen, Trampoline, Blöcke, Wind und eigene Ideen.
 
-**Version 0.5.0 · versionCode 6 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
+**Version 0.5.0 · versionCode 7 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
 
 ## Spielen
 

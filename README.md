@@ -2,7 +2,7 @@
 
 Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Murmeln, Holzrampen, Trampoline, Blöcke, Wind und eigene Ideen.
 
-**Version 0.4.1 · versionCode 6 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
+**Version 0.5.0 · versionCode 6 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
 
 ## Spielen
 
@@ -23,12 +23,20 @@ Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Murmeln, Holzrampe
 
 Eine Murmel, sechs Bauteilarten, feste Hindernisse und ein Zielkorb bilden den Baukasten. Hebel, bewegliche Maschinen, Motoren und mehrere Murmeln sind noch nicht enthalten. Die vereinfachte Physik simuliert Schwerkraft, Kollisionen und Rollverluste; sie ist kein wissenschaftliches Messwerkzeug. Luft ist ein vereinfachter Kraftkegel; Bauteile schirmen ihn in dieser Variante nicht ab.
 
+## Abwechslungsreiche Wege ab 0.5.0
+
+18 der 24 Aufgaben haben neue Hindernisaufbauten und Hinweise. Die einfachen Einführungen bleiben erhalten; dazwischen gibt es niedrige Tunnel, versetzte Fenster, eine S-Kurve, einen Hin-und-zurück-Weg, hohe Galerien und Schalter in mehrstufigen Wegen. Aufgabe 13 führt von links oben unter einer mittleren Sperre hindurch zum Korb rechts oben.
+
+Die Referenzlösungen verwenden bei den neuen Aufgaben zwei bis vier Bauteile. Andere Lösungen bleiben ausdrücklich erlaubt. Tests prüfen echte Lösbarkeit, kleine Platzierungsabweichungen und viele einfache Ein-Bauteil-Aufbauten für die mehrstufigen Aufgaben. Das ist keine mathematische Garantie gegen jede kreative Abkürzung.
+
+Sterne, freie Bauwerke und benannte Erfindungen bleiben erhalten. Neue Level-Geometrien bekommen eigene Aufbau-Speicherplätze; alte Level-Aufbauten werden nicht gelöscht und nicht in unpassende neue Hindernisse geladen.
+
 ## Schalter und Türen
 
 - **＋ Schalter** setzt einen durchlässigen Berührungssensor; **＋ Tür** eine geschlossene Barriere.
 - Ein Bauteil auswählen und über **Verbindung** Rot 1, Blau 2, Gelb 3 oder Grün 4 wählen. Gleichfarbige Türen öffnen bei Berührung eines Schalters und bleiben bis zum nächsten Versuch offen.
 - Farbe und Zahl sind beide sichtbar; beim Auswählen verbinden gestrichelte Linien passende Bauteile. Mehrere Türen können denselben Schalter nutzen.
-- Aufgaben 21–24 führen Schalter mit Rampen, Trampolinen und Wind ein. Die erste hat einen festen Schalter; in den weiteren wird der Schalter selbst gebaut und zugeordnet.
+- Aufgaben 21–24 führen Schalter mit Rampen, Trampolinen und Wind ein. Die ersten haben feste Schalter im Weg; in Aufgaben 23 und 24 wird der Schalter selbst gebaut und zugeordnet.
 - **Für Eltern · Info** zeigt Version, lokale Datenspeicherung und die optionale Diagnose nach einer Erwachsenenabfrage.
 
 ## Firebase und Play Store
@@ -43,7 +51,7 @@ Die konkrete Einrichtung und der lokale Release-Ablauf stehen in [docs/RELEASE.m
 
 Die direkt installierbare APK liegt unter **[Releases](https://github.com/pehab/MeiTueftler/releases)**. Jeder erfolgreiche Build auf `main` veröffentlicht automatisch ein Testrelease mit APK. Die Veröffentlichung wartet auf Tests, Lint, Build und Emulator-Smoke-Test.
 
-Tags haben das Format `v0.4.1-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
+Tags haben das Format `v0.5.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
 
 **Wechsel von den ersten Testbuilds:** Deren Signaturen wechselten ungewollt zwischen CI-Läufen. Bei einem Signaturwechsel muss die bisherige Test-App deinstalliert werden; dadurch wird der lokale Fortschritt gelöscht. Die neuen Speicherformate lesen weiterhin alte Bauwerke, wenn die App-Daten erhalten bleiben. Nach einmaliger Einrichtung des festen Schlüssels bleiben zukünftige Signaturen gleich. APK-Updates benötigen außerdem einen höheren `versionCode`.
 

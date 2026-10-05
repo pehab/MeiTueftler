@@ -19,7 +19,7 @@ public final class PhysicsEngineTest {
         }
     }
     @Test public void allDoorPuzzlesNeedTheirSwitch() {
-        for(int id=20;id<24;id++) {
+        for(int id:new int[]{17,18,19,20,21,22,23}) {
             Level l=LevelCatalog.get(id);PhysicsEngine e=new PhysicsEngine(l,l.solution);finish(e);
             assertEquals(l.name,PhysicsEngine.State.WON,e.state);assertTrue(e.switchesTriggered>0);
             java.util.ArrayList<Ramp> fixed=new java.util.ArrayList<>(),build=new java.util.ArrayList<>();
@@ -28,6 +28,52 @@ public final class PhysicsEngineTest {
             Level closed=new Level(99,"closed","","","",l.spawnX,l.spawnY,l.goalX,l.goalY,6,2,fixed,build);
             PhysicsEngine blocked=new PhysicsEngine(closed,build);finish(blocked);assertEquals(l.name,PhysicsEngine.State.RETRY,blocked.state);
         }
+    }
+    @Test public void changedLayoutsStartFreshBuildsWithoutChangingStarsOrSandboxKeys() {
+        int changed=0;
+        for(Level l:LevelCatalog.LEVELS) {
+            assertEquals(LevelCatalog.LEVELS.indexOf(l),l.id);
+            if(l.layoutRevision==2) { changed++;assertEquals("build_"+l.id+"_v2",l.buildKey());assertFalse(l.fixed.isEmpty()); }
+            else assertEquals("build_"+l.id,l.buildKey());
+            for(Ramp r:l.solution) {
+                Ramp clamped=r.copy();clamped.clamp();
+                assertEquals(l.name,r.x,clamped.x,0.001);assertEquals(l.name,r.y,clamped.y,0.001);
+                assertEquals(l.name,r.length,clamped.length,0.001);
+            }
+        }
+        assertEquals(18,changed);assertEquals("build_-1",LevelCatalog.SANDBOX.buildKey());
+    }
+    @Test public void revisedHintsAllowSmallPlacementErrors() {
+        for(Level l:LevelCatalog.LEVELS)if(l.layoutRevision==2) {
+            int attempts=0,wins=0;
+            for(int i=0;i<l.solution.size();i++)for(int axis=0;axis<2;axis++)for(int delta:new int[]{-4,4}) {
+                java.util.ArrayList<Ramp> build=new java.util.ArrayList<>();for(Ramp r:l.solution)build.add(r.copy());
+                Ramp r=build.get(i);if(axis==0)r.x+=delta;else r.y+=delta;r.clamp();
+                PhysicsEngine e=new PhysicsEngine(l,build);finish(e);attempts++;if(e.state==PhysicsEngine.State.WON)wins++;
+            }
+            assertTrue(l.name+" tolerates only "+wins+"/"+attempts+" placements",wins>=attempts*0.75);
+        }
+    }
+    @Test public void multiStageRoutesRejectSampledCommonSinglePieceShortcuts() {
+        for(int id:new int[]{3,5,6,8,9,12,13,14,15,17,18,19,21,22,23}) {
+            Level l=LevelCatalog.get(id);
+            for(Ramp.Kind kind:new Ramp.Kind[]{Ramp.Kind.PLANK,Ramp.Kind.TRAMPOLINE,Ramp.Kind.FAN})
+                for(int x=100;x<=900;x+=100)for(int y=100;y<=550;y+=75)
+                for(int angle=-75;angle<=75;angle+=15)for(int length:new int[]{160,320,560}) {
+                    Ramp r=new Ramp(x,y,length,angle,false,kind);r.power=3;r.clamp();
+                    PhysicsEngine e=new PhysicsEngine(l,Collections.singletonList(r));finish(e);
+                    assertNotEquals(l.name+" with "+kind+" at "+x+","+y+" / "+angle+" degrees",PhysicsEngine.State.WON,e.state);
+                }
+        }
+    }
+    @Test public void underpassRouteActuallyTravelsBelowTheBarrierThenClimbsToHighGoal() {
+        Level l=LevelCatalog.get(12);PhysicsEngine e=new PhysicsEngine(l,l.solution);boolean crossed=false;
+        while(e.state==PhysicsEngine.State.RUNNING) {
+            double before=e.x;e.step();
+            if(before<=500&&e.x>500) { assertTrue("must pass below the blocker",e.y>400);crossed=true; }
+        }
+        assertTrue(crossed);assertEquals(PhysicsEngine.State.WON,e.state);
+        assertTrue(l.spawnY<100);assertTrue(l.goalY<200);
     }
     @Test public void matchingDoorsLatchAndResetWithoutChangingBuild() {
         Ramp sensor=new Ramp(500,300,160,0,false,Ramp.Kind.SWITCH);sensor.channel=2;
@@ -78,7 +124,7 @@ public final class PhysicsEngineTest {
         assertEquals(-175,Ramp.normalizeAngle(185),0);
     }
     @Test public void springChallengesActuallyBounceBeforeWinning() {
-        for(int id:new int[]{10,12,14,15}) {
+        for(int id:new int[]{2,3,4,7,8,10,12,13,15,17,18,22}) {
             Level l=LevelCatalog.get(id);PhysicsEngine e=new PhysicsEngine(l,l.solution);finish(e);
             assertEquals(l.name,PhysicsEngine.State.WON,e.state);
             assertTrue(l.name,e.trampolineBounces>0);

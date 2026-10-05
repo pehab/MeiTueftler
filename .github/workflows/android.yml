@@ -87,7 +87,7 @@ jobs:
           Spielbare Android-Testversion der Murmel- und Rampenwerkstatt.
 
           Die APK unten direkt auf dem Android-Gerät herunterladen und installieren.
-          Enthält 24 Rätsel, Bretter, Trampoline, Blöcke, Ventilatoren, Schalter und Türen, einen freien Bauplatz mit 20 Bauteilen, benannte Erfindungen und eine warme Holzwerkstatt. Crashlytics ist eingerichtet und wird nach Zustimmung im Elternbereich aktiviert. Neues MeiApp-Icon. Fortschritt und Maschinen werden lokal gespeichert.
+          Enthält 24 Rätsel, davon 18 überarbeitete Hinderniswege mit Tunneln, S-Kurven und hohen Galerien, Bretter, Trampoline, Blöcke, Ventilatoren, Schalter und Türen, einen freien Bauplatz mit 20 Bauteilen, benannte Erfindungen und eine warme Holzwerkstatt. Crashlytics ist eingerichtet und wird nach Zustimmung im Elternbereich aktiviert. Neues MeiApp-Icon. Fortschritt und Maschinen werden lokal gespeichert.
           Dies ist ein Debug-Testbuild; kein Play-Store-Release.
           Diese APK verwendet den festen privaten Test-Signaturschlüssel. Künftige Testversionen lassen sich als Updates installieren.
           Beim Wechsel von älteren Builds mit zufälligen Signaturen ist einmalig eine Neuinstallation nötig, die lokalen Fortschritt löscht.
@@ -101,7 +101,7 @@ jobs:
   smoke:
     needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     permissions:
       actions: read
       contents: read

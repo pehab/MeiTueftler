@@ -14,3 +14,7 @@ Die Feature-Grafik ist eine Werbeillustration; sie ist kein Screenshot der Spiel
 Das AAB wie vereinbart lokal in Android Studio signieren. GitHub veröffentlicht weiterhin nur die Test-APK. Support-E-Mail, vollständige Datenschutzerklärungs-URL und App-Inhalte/Datensicherheit in der Play Console ergänzen. Der Datenschutztext im Repository ist ein noch zu vervollständigender Entwurf.
 
 Vorgaben geprüft am 5. Oktober 2026 anhand https://support.google.com/googleplay/android-developer/answer/9866151?hl=de
+
+## Update 0.5.0
+
+18 Level wurden überarbeitet. Die vorhandenen Store-Bilder stammen aus 0.4.x. Bild 02 zeigt die alte Aufgabenliste und muss vor dem Upload von 0.5.0 durch eine aktuelle Aufnahme ersetzt werden. Die unveränderten Einführungsaufgaben in Bildern 01, 03, 04 und 05 bleiben repräsentativ. Aktuelle Screenshots der Aufgabenliste und des neuen Unterpass-Level liegen beim erfolgreichen CI-Lauf im Artefakt `interface-screenshots`.

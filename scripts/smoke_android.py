@@ -325,6 +325,45 @@ node("Geschafft!",timeout=20)
 screenshot("door-puzzle-solved")
 tap("Weiter tüfteln")
 tap("‹ Menü")
+# Solve the new underpass route through the real controls and verify its revised build storage.
+tap("‹ Menü")
+tap("24 Murmel-Aufgaben")
+for _ in range(6):
+    if any(i.get("text", "").startswith("13 · Unten durch, oben ankommen") for i in tree().iter("node")):
+        break
+    adb("shell", "input", "swipe", "600", "660", "600", "250", "500")
+tap("13 · Unten durch, oben ankommen")
+board=node("Baufläche", "content-desc")
+screenshot("underpass-empty")
+def place_piece(x, y):
+    x1,y1,x2,y2=map(int,re.findall(r"\d+",board.get("bounds")))
+    scale=min((x2-x1-12)/1000,(y2-y1-12)/600)
+    ox=x1+(x2-x1-1000*scale)/2;oy=y1+(y2-y1-600*scale)/2
+    adb("shell","input","swipe",str(round(ox+500*scale)),str(round(oy+300*scale)),
+        str(round(ox+x*scale)),str(round(oy+y*scale)),"650")
+tap("＋ Brett")
+for _ in range(5): tap("Drehen ↷")
+for _ in range(5): tap("− Kürzer")
+node("Brett 1 · 45° · 280")
+place_piece(221,151.421)
+tap("＋ Trampolin")
+for _ in range(4): tap("＋ Länger")
+node("Trampolin 2 · 0° · 320")
+place_piece(436,555)
+screenshot("underpass-built")
+tap("▶ Ausprobieren")
+node("Geschafft!",timeout=20)
+screenshot("underpass-solved")
+tap("Weiter tüfteln")
+tap("‹ Menü")
+time.sleep(1)
+adb("shell","am","force-stop",PACKAGE)
+adb("shell","am","start","-W","-n",f"{PACKAGE}/.MainActivity")
+root=ET.fromstring(adb("shell","run-as",PACKAGE,"cat","shared_prefs/workshop.xml"))
+assert any(i.get("name")=="build_12_v2" and len(json.loads(i.text))==2 for i in root.findall("string"))
+assert any(i.get("name")=="build_0" for i in root.findall("string"))
+node("MeiTüftler")
+
 # No Firebase provider may start, including when the SDK is linked but unconfigured.
 assert "FirebaseInitProvider" not in adb("shell","dumpsys","package",PACKAGE)
 assert "com.google.firebase.analytics" not in adb("shell","dumpsys","package",PACKAGE)

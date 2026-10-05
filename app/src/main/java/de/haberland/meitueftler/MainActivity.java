@@ -67,7 +67,7 @@ public final class MainActivity extends ComponentActivity {
         });
         if(state!=null && state.containsKey("level")) {
             current=LevelCatalog.get(state.getInt("level"));
-            decodeBuild(state.getString("build","[]"));
+            decodeBuild(state.getInt("layoutRevision",1)==current.layoutRevision?state.getString("build","[]"):prefs.getString(current.buildKey(),"[]"));
             hintUsed=state.getBoolean("hintUsed");
             inventionId=state.getString("inventionId");
             screen="game";
@@ -77,7 +77,7 @@ public final class MainActivity extends ComponentActivity {
     @Override public void onConfigurationChanged(Configuration config) { super.onConfigurationChanged(config);rebuildScreen(); }
     @Override protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
-        if(current!=null && screen.equals("game")) { out.putInt("level",current.id);out.putString("build",encodeBuild());out.putBoolean("hintUsed",hintUsed);out.putString("inventionId",inventionId); }
+        if(current!=null && screen.equals("game")) { out.putInt("level",current.id);out.putInt("layoutRevision",current.layoutRevision);out.putString("build",encodeBuild());out.putBoolean("hintUsed",hintUsed);out.putString("inventionId",inventionId); }
     }
     @Override protected void onPause() { paused=true;saveBuild();super.onPause(); }
     @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing();if(updates!=null)updates.resume(); }
@@ -150,7 +150,7 @@ public final class MainActivity extends ComponentActivity {
     }
     private void openLevel(int id) {
         saveBuild();inventionId=null;current=LevelCatalog.get(id);engine=null;selected=-1;history.clear();hintUsed=false;hintVisible=false;finishedHandled=false;
-        decodeBuild(prefs.getString("build_"+id,"[]"));screen="game";rebuildScreen();
+        decodeBuild(prefs.getString(current.buildKey(),"[]"));screen="game";rebuildScreen();
     }
     private void showWorkshop() {
         LinearLayout header=row();header.addView(button("‹ Menü",false,this::goBack));
@@ -358,5 +358,5 @@ public final class MainActivity extends ComponentActivity {
             .setNegativeButton("Abbrechen",null).setPositiveButton("Test auslösen",(x,y)->{throw new IllegalStateException("MeiTueftler manual Crashlytics test");}).show());
         dialog.show();
     }
-    private void saveBuild() { if(current!=null&&prefs!=null)prefs.edit().putString("build_"+current.id,encodeBuild()).apply(); }
+    private void saveBuild() { if(current!=null&&prefs!=null)prefs.edit().putString(current.buildKey(),encodeBuild()).apply(); }
 }

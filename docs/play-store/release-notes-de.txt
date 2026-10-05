@@ -1,6 +1,5 @@
-Neu in MeiTüftler:
-• Schalter und Türen mit farbigen Verbindungen
-• Vier neue Aufgaben – insgesamt 24
-• Ventilatoren, Trampoline und frei speicherbare Erfindungen
-• Neues MeiApp-Icon
-• Freiwillige Absturzdiagnose im Elternbereich
+Neu in MeiTüftler 0.5.0:
+• 18 Aufgaben mit neuen Hindernissen und Lösungswegen
+• Tunnel, versetzte Durchgänge, S-Kurven und hohe Galerien
+• Mehrstufige Maschinen mit passenden Hinweisen
+• Sterne und freie Erfindungen bleiben erhalten

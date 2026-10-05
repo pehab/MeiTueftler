@@ -62,8 +62,8 @@ def tap(prefix):
             x1,y1,x2,y2=map(int,re.findall(r"\d+",scrolls[-1].get("bounds")))
             for _ in range(3):
                 adb("shell","input","swipe",str((x1+x2)//2),str(y1+30),str((x1+x2)//2),str(y2-30),"250")
-            root = tree()
     for _ in range(7):
+        root = tree()
         found = [i for i in root.iter("node") if i.get("text", "").strip().casefold().startswith(prefix.strip().casefold())]
         if found:
             break
@@ -72,9 +72,7 @@ def tap(prefix):
             break
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", scrolls[-1].get("bounds")))
         adb("shell", "input", "swipe", str((x1+x2)//2), str(y2-30), str((x1+x2)//2), str(y1+30), "350")
-        root = tree()
-    # Reuse the observed node. Fetch again only if scrolling did not expose the control.
-    item = found[0] if found else node(prefix)
+    item = node(prefix)
     assert item.get("enabled") == "true", f"Disabled: {prefix}"
     x1, y1, x2, y2 = map(int, re.findall(r"\d+", item.get("bounds")))
     assert x2 > x1 and y2 > y1, f"Not visible: {prefix}"

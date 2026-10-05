@@ -50,7 +50,7 @@ jobs:
         id: version
         run: echo "name=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
       - name: Test, lint and build
-        run: bash gradlew --warning-mode all testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease signingReport
+        run: bash gradlew --warning-mode fail testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease signingReport
       - name: Upload APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7, Node.js 24
         with:

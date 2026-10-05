@@ -70,3 +70,7 @@ bash gradlew testDebugUnitTest lintDebug assembleDebug
 - GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst eine Brett-, eine Trampolin- und eine Ventilator-Aufgabe und prüft die neue Werkzeugleiste, gespeicherte Bauteilarten, benannte Erfindungen samt Kopien und Änderungen nach einem Neustart, Rückgängig, Hochformat und die System-Zurück-Taste. Screenshots dokumentieren Menü, Aufgaben, Baufläche und Erfolg.
 
 Die App verwendet keine Konten, Werbung, In-App-Käufe oder Google Analytics. Das Firebase-SDK bringt eine Netzberechtigung mit; Firebase wird erst bei eingerichteter Konfiguration und ausdrücklicher Zustimmung im Elternbereich gestartet. Spielen funktioniert offline. Die Grafiken werden direkt mit Canvas gezeichnet.
+
+### Saubere Builds
+
+Java-Compiler- und Android-Lint-Warnungen sowie Gradle-Deprecations brechen den Build ab. Die CI-Actions sind auf Node.js 24 und feste Commit-Versionen gesetzt. Die stabile Kombination AGP 9.4.1 / Gradle 9.7.0 vermeidet den bekannten AGP-Aufruf von `Configuration.setVisible`, der ab Gradle 9.8 eine Warnung auslöst ([Upstream-Fehler](https://issuetracker.google.com/issues/560282299)). Ausschließlich der Lint-Hinweis zum Upgrade dieser Wrapper-Version ist deshalb in `app/lint.xml` ausgenommen. Die Ausnahme entfernen, sobald der Fix in einer stabilen AGP-Version verfügbar ist.

@@ -1,0 +1,9 @@
+<lint>
+    <!-- AGP 9.4.1 is the stable toolchain. Gradle 9.8 deprecates an API it still uses.
+         Keep the supported Gradle 9.7 pairing until the AGP fix ships in stable:
+         https://issuetracker.google.com/issues/560282299
+         Ignore only the wrapper upgrade suggestion; all other lint checks remain strict. -->
+    <issue id="AndroidGradlePluginVersion">
+        <ignore path="../gradle/wrapper/gradle-wrapper.properties" />
+    </issue>
+</lint>

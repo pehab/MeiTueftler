@@ -14,6 +14,9 @@ public final class PhysicsEngine {
     public final List<Ramp> ramps=new ArrayList<>();
     private final Level level;
     private double stillTime;
+    private final boolean[] channels=new boolean[4];
+    public int switchesTriggered;
+    public boolean isOpen(Ramp r) { return r.linked()&&channels[Math.max(1,Math.min(4,r.channel))-1]; }
     public PhysicsEngine(Level level,List<Ramp> build) {
         this.level=level; x=level.spawnX;y=level.spawnY;
         for(Ramp ramp:level.fixed) ramps.add(ramp.copy());
@@ -34,6 +37,10 @@ public final class PhysicsEngine {
         double speed=Math.hypot(vx,vy);
         if(speed>1200) { vx*=1200/speed;vy*=1200/speed; }
         x+=vx*STEP;y+=vy*STEP;
+        // All sensors run before doors collide, independent of construction order.
+        for(Ramp r:ramps)if(r.kind==Ramp.Kind.SWITCH&&!isOpen(r)&&r.distance(x,y)<=RADIUS) {
+            channels[Math.max(1,Math.min(4,r.channel))-1]=true;switchesTriggered++;
+        }
         for(int pass=0;pass<3;pass++) for(Ramp ramp:ramps) collide(ramp);
         if(Math.abs(x-level.goalX)<32 && y>=level.goalY-30 && y<=level.goalY+26 && vy>=-30) {
             state=State.WON;x=level.goalX;y=level.goalY-5;vx=0;vy=0;return;
@@ -42,6 +49,7 @@ public final class PhysicsEngine {
         if(y>650 || x< -50 || x>1050 || time>16 || stillTime>2) state=State.RETRY;
     }
     private void collide(Ramp r) {
+        if(r.kind==Ramp.Kind.SWITCH||(r.kind==Ramp.Kind.DOOR&&isOpen(r)))return;
         if(r.kind==Ramp.Kind.FAN) {
             double nx=x-r.x,ny=y-r.y,distance=Math.hypot(nx,ny),contact=RADIUS+32;
             if(distance>=contact)return;

@@ -42,7 +42,7 @@ public final class MainActivity extends ComponentActivity {
     private boolean sound=true, finishedHandled;
     private String screen="menu";
     private String inventionId;
-    private Button powerButton;
+    private Button powerButton, channelButton;
     private SharedPreferences prefs;
     private final Deque<String> history=new ArrayDeque<>();
     private WorkshopView board;
@@ -56,6 +56,7 @@ public final class MainActivity extends ComponentActivity {
         super.onCreate(state);
         prefs=getSharedPreferences("workshop",MODE_PRIVATE);
         sound=prefs.getBoolean("sound",true);
+        Diagnostics.start(this,prefs.getBoolean("diagnostics",false));
         if(Build.VERSION.SDK_INT>=30)getWindow().setDecorFitsSystemWindows(false);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         try { tones=new ToneGenerator(AudioManager.STREAM_MUSIC,35); } catch(RuntimeException ignored) { tones=null; }
@@ -122,6 +123,8 @@ public final class MainActivity extends ComponentActivity {
         addEqual(choices,tasks);addEqual(choices,free);root.addView(choices);
         Button gallery=button("Meine Erfindungen",false,()->{screen="inventions";rebuildScreen();});
         root.addView(gallery,new LinearLayout.LayoutParams(-1,dp(48)));
+        Button parents=button("Für Eltern · Info",false,this::parentGate);
+        root.addView(parents,new LinearLayout.LayoutParams(-1,dp(48)));
         TextView footer=text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   "+totalStars()+" / "+(LevelCatalog.LEVELS.size()*3)+" Sterne",13,false);
         footer.setPadding(0,dp(10),0,0);root.addView(footer);
     }
@@ -164,15 +167,19 @@ public final class MainActivity extends ComponentActivity {
         toolRow(tools,editButton("＋ Trampolin",()->addElement(Ramp.Kind.TRAMPOLINE)),editButton("＋ Block",()->addElement(Ramp.Kind.BLOCK)));
         powerButton=editButton("Stärke: mittel",this::cyclePower);
         toolRow(tools,editButton("＋ Ventilator",()->addElement(Ramp.Kind.FAN)),powerButton);
+        toolRow(tools,editButton("＋ Schalter",()->addElement(Ramp.Kind.SWITCH)),editButton("＋ Tür",()->addElement(Ramp.Kind.DOOR)));
+        channelButton=editButton("Verbindung wählen",this::cycleChannel);tools.addView(channelButton,new LinearLayout.LayoutParams(-1,dp(48)));
         toolRow(tools,editButton("↶ Drehen",()->changeRamp(-5,0)),editButton("Drehen ↷",()->changeRamp(5,0)));
         toolRow(tools,editButton("− Kürzer",()->changeRamp(0,-40)),editButton("＋ Länger",()->changeRamp(0,40)));
         toolRow(tools,editButton("Entfernen",this::removeRamp),editButton("Neu bauen",this::clearBuild));
         hintButton=button("Hinweis",false,()->{hintVisible=!hintVisible;if(hintVisible)hintUsed=true;updateControls();board.invalidate();});
         soundButton=button(sound?"Ton: an":"Ton: aus",false,()->{sound=!sound;prefs.edit().putBoolean("sound",sound).apply();updateControls();});
         toolRow(tools,hintButton,soundButton);
-        runButton=button("▶ Ausprobieren",true,this::toggleSimulation);LinearLayout.LayoutParams runLp=new LinearLayout.LayoutParams(-1,dp(56));runLp.setMargins(0,dp(6),0,dp(6));if(landscape)tools.addView(runButton,runLp);
+        runButton=button("▶ Ausprobieren",true,this::toggleSimulation);LinearLayout.LayoutParams runLp=new LinearLayout.LayoutParams(-1,dp(56));runLp.setMargins(0,dp(6),0,dp(6));
         statusText=text("Bauteil antippen und verschieben. Luftkegel zeigt die Blasrichtung.",13,false);tools.addView(statusText);
-        scroll.addView(tools);body.addView(scroll,landscape?new LinearLayout.LayoutParams(dp(244),-1):new LinearLayout.LayoutParams(-1,dp(246)));
+        scroll.addView(tools);
+        if(landscape) { LinearLayout side=column();side.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));side.addView(runButton,runLp);body.addView(side,new LinearLayout.LayoutParams(dp(244),-1)); }
+        else body.addView(scroll,new LinearLayout.LayoutParams(-1,dp(246)));
         root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
         if(!landscape)root.addView(runButton,runLp);
         updateControls();
@@ -189,6 +196,10 @@ public final class MainActivity extends ComponentActivity {
     private void changeRamp(int angle,int length) {
         if(selected<0||selected>=build.size()) { Toast.makeText(this,"Tippe zuerst ein Bauteil an.",Toast.LENGTH_SHORT).show();return; }
         rememberBuild();Ramp r=build.get(selected);r.angle=r.kind==Ramp.Kind.FAN?Ramp.normalizeAngle(r.angle+angle):Math.max(-85,Math.min(85,r.angle+angle));r.length=Math.max(160,Math.min(560,r.length+length));r.clamp();constructionChanged();
+    }
+    private void cycleChannel() {
+        if(selected<0||selected>=build.size()||!build.get(selected).linked())return;
+        rememberBuild();Ramp r=build.get(selected);r.channel=r.channel%4+1;constructionChanged();
     }
     private void cyclePower() {
         if(selected<0||selected>=build.size()||build.get(selected).kind!=Ramp.Kind.FAN) {
@@ -232,6 +243,9 @@ public final class MainActivity extends ComponentActivity {
         boolean fanSelected=selected>=0&&selected<build.size()&&build.get(selected).kind==Ramp.Kind.FAN;
         powerButton.setText(fanSelected?"Stärke: "+build.get(selected).powerLabel():"Stärke wählen");
         powerButton.setEnabled(editing&&fanSelected);powerButton.setAlpha(editing&&fanSelected?1f:0.45f);
+        boolean linked=selected>=0&&selected<build.size()&&build.get(selected).linked();
+        channelButton.setText(linked?"Verbindung: "+build.get(selected).channelLabel():"Verbindung wählen");
+        channelButton.setEnabled(editing&&linked);channelButton.setAlpha(editing&&linked?1f:0.45f);
         selectionText.setText(label);
         if(hintVisible)statusText.setText(current.hint);
         else if(engine==null)statusText.setText("Bauteil antippen und verschieben. Luftkegel zeigt die Blasrichtung.");
@@ -241,7 +255,7 @@ public final class MainActivity extends ComponentActivity {
     }
     private String encodeBuild() {
         JSONArray array=new JSONArray();
-        for(Ramp r:build)try { JSONObject o=new JSONObject();o.put("x",r.x);o.put("y",r.y);o.put("length",r.length);o.put("angle",r.angle);o.put("kind",r.kind.name());o.put("power",r.power);array.put(o); }catch(JSONException ignored){}
+        for(Ramp r:build)try { JSONObject o=new JSONObject();o.put("x",r.x);o.put("y",r.y);o.put("length",r.length);o.put("angle",r.angle);o.put("kind",r.kind.name());o.put("power",r.power);o.put("channel",r.channel);array.put(o); }catch(JSONException ignored){}
         return array.toString();
     }
     private void decodeBuild(String json) {
@@ -252,7 +266,7 @@ public final class MainActivity extends ComponentActivity {
             Ramp.Kind kind=Ramp.Kind.PLANK;
             try { kind=Ramp.Kind.valueOf(o.optString("kind","PLANK")); }catch(IllegalArgumentException ignored){}
             Ramp r=new Ramp(x,y,Math.max(160,Math.min(560,length)),kind==Ramp.Kind.FAN?Ramp.normalizeAngle(angle):Math.max(-85,Math.min(85,angle)),false,kind);
-            r.power=Math.max(1,Math.min(3,o.optInt("power",2)));r.clamp();build.add(r);
+            r.channel=Math.max(1,Math.min(4,o.optInt("channel",1)));r.power=Math.max(1,Math.min(3,o.optInt("power",2)));r.clamp();build.add(r);
         }}catch(JSONException ignored){build.clear();}
     }
     private JSONArray inventions() {
@@ -316,6 +330,30 @@ public final class MainActivity extends ComponentActivity {
                 JSONArray saved=inventions();for(int i=saved.length()-1;i>=0;i--){JSONObject item=saved.optJSONObject(i);if(item!=null&&item.optString("id").equals(id))saved.remove(i);}
                 prefs.edit().putString("inventions",saved.toString()).apply();rebuildScreen();
             }).show();
+    }
+    private void parentGate() {
+        int a=3+new java.util.Random().nextInt(7),b=3+new java.util.Random().nextInt(7);
+        EditText answer=new EditText(this);answer.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        answer.setContentDescription("Antwort für Eltern");
+        new AlertDialog.Builder(this).setTitle("Für Eltern").setMessage("Bitte eine erwachsene Person fragen. Wie viel ist "+a+" × "+b+"?")
+            .setView(answer).setNegativeButton("Abbrechen",null).setPositiveButton("Weiter",(d,w)->{
+                if(answer.getText().toString().trim().equals(String.valueOf(a*b)))parentInfo();
+                else Toast.makeText(this,"Bitte eine erwachsene Person fragen.",Toast.LENGTH_SHORT).show();
+            }).show();
+    }
+    private void parentInfo() {
+        boolean enabled=prefs.getBoolean("diagnostics",false)&&Diagnostics.configured();
+        String description="MeiTüftler "+BuildConfig.VERSION_NAME+" · Peter\n\nSpielstände und Erfindungen bleiben auf diesem Gerät. Keine Werbung oder Konten.\n\nOptionale Absturzdiagnose: Nach Zustimmung sendet Firebase Crashlytics technische Absturzberichte an Google, darunter Stacktraces, App-/Android-Version, Gerätemodell und Installationskennungen. Erfindungsnamen und Bauwerke werden nicht als Diagnosedaten angehängt. Die Zustimmung ist freiwillig und kann hier widerrufen werden. Bereits gesendete Berichte werden dadurch nicht zurückgerufen.\n\nDiagnose: "+(Diagnostics.configured()?(enabled?"an":"aus"):"in diesem Build nicht eingerichtet");
+        AlertDialog.Builder dialog=new AlertDialog.Builder(this).setTitle("Info und Datenschutz").setMessage(description).setNegativeButton("Schließen",null);
+        if(Diagnostics.configured())dialog.setPositiveButton(enabled?"Diagnose ausschalten":"Diagnose erlauben",(d,w)->{
+            boolean value=!enabled;
+            if(Diagnostics.start(this,value)){prefs.edit().putBoolean("diagnostics",value).apply();Toast.makeText(this,value?"Diagnose eingeschaltet":"Diagnose ausgeschaltet",Toast.LENGTH_SHORT).show();}
+            else Toast.makeText(this,"Diagnose konnte nicht aktiviert werden.",Toast.LENGTH_SHORT).show();
+        });
+        if(BuildConfig.DEBUG&&enabled)dialog.setNeutralButton("Test-Absturz",(d,w)->new AlertDialog.Builder(this)
+            .setTitle("Diagnose testen?").setMessage("Die App wird absichtlich beendet. Danach erneut öffnen und den Bericht in Firebase prüfen.")
+            .setNegativeButton("Abbrechen",null).setPositiveButton("Test auslösen",(x,y)->{throw new IllegalStateException("MeiTueftler manual Crashlytics test");}).show());
+        dialog.show();
     }
     private void saveBuild() { if(current!=null&&prefs!=null)prefs.edit().putString("build_"+current.id,encodeBuild()).apply(); }
 }

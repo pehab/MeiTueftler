@@ -10,13 +10,41 @@ public final class PhysicsEngineTest {
     }
     private static void finish(PhysicsEngine engine) { for(int i=0;i<4800&&engine.state==PhysicsEngine.State.RUNNING;i++)engine.step(); }
     @Test public void allChallengesHaveReachableReferenceSolutions() {
-        assertEquals(20,LevelCatalog.LEVELS.size());
+        assertEquals(24,LevelCatalog.LEVELS.size());
         for(Level l:LevelCatalog.LEVELS) {
             assertTrue(l.solution.size()<=l.bonusRamps);
             for(Ramp r:l.solution) { assertEquals(0,r.angle%5,0.001);assertEquals(0,(r.length-160)%40,0.001); }
             PhysicsEngine engine=new PhysicsEngine(l,l.solution);finish(engine);
             assertEquals(l.name,PhysicsEngine.State.WON,engine.state);
         }
+    }
+    @Test public void allDoorPuzzlesNeedTheirSwitch() {
+        for(int id=20;id<24;id++) {
+            Level l=LevelCatalog.get(id);PhysicsEngine e=new PhysicsEngine(l,l.solution);finish(e);
+            assertEquals(l.name,PhysicsEngine.State.WON,e.state);assertTrue(e.switchesTriggered>0);
+            java.util.ArrayList<Ramp> fixed=new java.util.ArrayList<>(),build=new java.util.ArrayList<>();
+            for(Ramp r:l.fixed)if(r.kind!=Ramp.Kind.SWITCH)fixed.add(r);
+            for(Ramp r:l.solution)if(r.kind!=Ramp.Kind.SWITCH)build.add(r);
+            Level closed=new Level(99,"closed","","","",l.spawnX,l.spawnY,l.goalX,l.goalY,6,2,fixed,build);
+            PhysicsEngine blocked=new PhysicsEngine(closed,build);finish(blocked);assertEquals(l.name,PhysicsEngine.State.RETRY,blocked.state);
+        }
+    }
+    @Test public void matchingDoorsLatchAndResetWithoutChangingBuild() {
+        Ramp sensor=new Ramp(500,300,160,0,false,Ramp.Kind.SWITCH);sensor.channel=2;
+        Ramp door=new Ramp(500,370,160,0,false,Ramp.Kind.DOOR);door.channel=2;
+        Ramp other=door.copy();other.channel=1;other.x=800;
+        PhysicsEngine e=new PhysicsEngine(testLevel(500,260),Arrays.asList(door,other,sensor));e.vy=1200;
+        for(int i=0;i<100;i++)e.step();
+        assertTrue(e.isOpen(door));assertFalse(e.isOpen(other));assertEquals(1,e.switchesTriggered);assertTrue(e.y>400);
+        assertEquals(2,sensor.copy().channel);
+        PhysicsEngine reset=new PhysicsEngine(testLevel(500,260),Arrays.asList(door,sensor));assertFalse(reset.isOpen(door));
+        sensor.channel=1;assertEquals(2,e.ramps.get(2).channel);
+    }
+    @Test public void closedDoorsBlockFastMarbles() {
+        Ramp door=new Ramp(500,300,240,0,false,Ramp.Kind.DOOR);
+        PhysicsEngine e=new PhysicsEngine(testLevel(500,260),Arrays.asList(door));e.vy=1200;
+        for(int i=0;i<240;i++)e.step();assertTrue(e.y<=300-PhysicsEngine.RADIUS-12+0.001);
+        assertEquals(0,e.switchesTriggered);
     }
     @Test public void fanChallengesActuallyUseWindBeforeWinning() {
         for(int id=16;id<20;id++) {

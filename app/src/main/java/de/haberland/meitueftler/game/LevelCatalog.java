@@ -8,7 +8,21 @@ public final class LevelCatalog {
     private static Ramp spring(double x,double y,double length,double angle) { return new Ramp(x,y,length,angle,false,Ramp.Kind.TRAMPOLINE); }
     private static Ramp block(double x,double y,double length,double angle) { return new Ramp(x,y,length,angle,false,Ramp.Kind.BLOCK); }
     private static Ramp fan(double x,double y,double angle,int power) { Ramp r=new Ramp(x,y,320,angle,false,Ramp.Kind.FAN);r.power=power;return r; }
-    public static final List<Level> LEVELS=java.util.Arrays.asList(
+    private static Ramp linked(double x,double y,double length,double angle,Ramp.Kind kind,int channel) {
+        Ramp r=new Ramp(x,y,length,angle,true,kind);r.channel=channel;r.clamp();return r;
+    }
+    private static Level gateLevel(int id,String name,int source,int channel) {
+        Level old=LEVELS.get(source);
+        java.util.ArrayList<Ramp> fixed=new java.util.ArrayList<>(old.fixed);
+        java.util.ArrayList<Ramp> solution=new java.util.ArrayList<>(old.solution);
+        Ramp sensor=linked(old.spawnX,110,160,0,Ramp.Kind.SWITCH,channel);
+        if(id==20)fixed.add(sensor);
+        else { sensor=new Ramp(source==16?300:old.spawnX,source==16?75:110,160,0,false,Ramp.Kind.SWITCH);sensor.channel=channel;solution.add(sensor); }
+        fixed.add(linked(old.goalX,old.goalY-70,560,0,Ramp.Kind.DOOR,channel));
+        if(source==10)fixed.add(linked(old.goalX,old.goalY+70,560,0,Ramp.Kind.DOOR,channel));
+        return new Level(id,name,id==20?"Berühre den roten Schalter. Die rote Tür öffnet den Weg zum Korb.":"Baue einen Schalter mit der gleichen Verbindung wie die Tür. Die Murmel muss ihn zuerst berühren.",old.hint+(source==16?" Setze den Schalter rechts neben den Start in den Luftstrom und wähle ":" Setze den Schalter unter den Start und wähle ")+sensor.channelLabel()+". Der Sensor ist durchlässig; die Tür bleibt nach Berührung offen.","Eine kleine Berührung kann etwas anderes auslösen. Gleiche Farbe und Zahl verbinden Schalter und Tür.",old.spawnX,old.spawnY,old.goalX,old.goalY,6,old.bonusRamps+(id==20?0:1),fixed,solution);
+    }
+    public static final List<Level> LEVELS=new java.util.ArrayList<>(java.util.Arrays.asList(
         new Level(0,"Die erste Rampe","Bring die Murmel in den orangefarbenen Korb.","Lege ein langes Brett unter die Murmel. Das rechte Ende muss tiefer liegen.","Auf einer schrägen Rampe rollt die Murmel zur tieferen Seite.",110,60,720,500,3,1,java.util.Collections.emptyList(),java.util.Arrays.asList(r(300,230,520,20))),
         new Level(1,"Mehr Gefälle","Der Korb steht diesmal näher. Probiere einen anderen Winkel.","Eine steilere Rampe verändert den Weg der Murmel.","Der Winkel beeinflusst sowohl den Schwung als auch die Flugrichtung.",110,60,680,500,3,1,java.util.Collections.emptyList(),java.util.Arrays.asList(r(300,230,520,30))),
         new Level(2,"Die Brücke","Fange die Murmel mit einem zweiten Brett auf.","Das zweite Brett beginnt unter dem Ende des ersten.","Eine zweite Rampe kann eine fallende Murmel auffangen und weiterleiten.",110,60,920,500,4,2,java.util.Arrays.asList(wall(440,480,140,90)),java.util.Arrays.asList(r(280,210,440,15),r(650,370,360,20))),
@@ -29,7 +43,13 @@ public final class LevelCatalog {
         new Level(17,"Kräftig pusten","Der Korb steht weiter rechts. Probiere kräftigen Wind.","Nimm denselben schrägen Luftkegel und stelle die Stärke auf kräftig.","Stärkerer Wind gibt der Murmel mehr Schub. Sie kommt dadurch an einer anderen Stelle an.",200,60,780,500,6,1,java.util.Collections.emptyList(),java.util.Arrays.asList(fan(120,300,-60,3))),
         new Level(18,"Wind nach links","Puste die Murmel vom rechten Start nach links.","Drehe den Ventilator nach links oben und setze ihn rechts unter den Start.","Du kannst die Blasrichtung rundherum drehen. Luft wirkt nur im sichtbaren Luftkegel.",800,60,290,500,6,1,java.util.Collections.emptyList(),java.util.Arrays.asList(fan(880,300,-120,2))),
         new Level(19,"Luftpost","Der Korb hängt hoch oben. Trage die Murmel mit kräftigem Wind dorthin.","Ein kräftiger Ventilator links unter dem Start kann die Murmel über die Werkbank tragen.","Luft kann einen fallenden Ball bremsen und anheben. Sobald er den Luftkegel verlässt, fällt er wieder.",200,60,620,180,6,1,java.util.Collections.emptyList(),java.util.Arrays.asList(fan(120,300,-60,3)))
-    );
-    public static final Level SANDBOX=new Level(-1,"Freier Bauplatz","Baue mit Brettern, Trampolinen, Blöcken und Ventilatoren deine eigene Murmelmaschine.","Hier gibt es keinen vorgeschriebenen Aufbau. Baue, starte und verändere deine Maschine.","Jeder Versuch ist eine neue Idee.",110,60,850,520,20,20,java.util.Collections.emptyList(),java.util.Collections.emptyList());
+    ));
+    static {
+        LEVELS.add(gateLevel(20,"Sesam, öffne dich!",0,1));
+        LEVELS.add(gateLevel(21,"Die blaue Tür",3,2));
+        LEVELS.add(gateLevel(22,"Sprung mit Schalter",10,3));
+        LEVELS.add(gateLevel(23,"Wind öffnet Wege",16,4));
+    }
+    public static final Level SANDBOX=new Level(-1,"Freier Bauplatz","Baue mit Brettern, Trampolinen, Blöcken, Ventilatoren, Schaltern und Türen deine eigene Murmelmaschine.","Hier gibt es keinen vorgeschriebenen Aufbau. Baue, starte und verändere deine Maschine.","Jeder Versuch ist eine neue Idee.",110,60,850,520,20,20,java.util.Collections.emptyList(),java.util.Collections.emptyList());
     public static Level get(int id) { return id<0?SANDBOX:LEVELS.get(Math.min(id,LEVELS.size()-1)); }
 }

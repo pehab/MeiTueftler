@@ -40,6 +40,7 @@ final class WorkshopView extends View {
         fill(0xFFEED6A6);c.drawRoundRect(22,562,410,587,5,5,paint);
         paint.setTextSize(16);fill(0xFF72543B);c.drawText("Gute Ideen brauchen Versuche.",32,578,paint);
         drawSource(c,level);
+        if(!preview)drawConnections(c);
         drawBasket(c,level,false);
         for(Ramp r:level.fixed)drawRamp(c,r,false,false);
         List<Ramp> ramps=preview?level.solution:owner.build;
@@ -137,6 +138,7 @@ final class WorkshopView extends View {
     }
     private void drawRamp(Canvas c,Ramp r,boolean selected,boolean ghost) {
         c.save();c.translate((float)r.x,(float)r.y);c.rotate((float)r.angle);
+        if(r.linked()){drawLinked(c,r,selected,ghost);c.restore();fill(MainActivity.INK);return;}
         if(r.kind==Ramp.Kind.FAN){drawFan(c,r,selected,ghost);c.restore();fill(MainActivity.INK);return;}
         float half=(float)r.length/2;
         float thickness=(float)r.halfThickness();
@@ -184,6 +186,33 @@ final class WorkshopView extends View {
             }
         }
         c.restore();fill(MainActivity.INK);
+    }
+    static int channelColor(int channel) { return new int[]{0xFFC65648,0xFF497DB2,0xFFB79121,0xFF56835C}[Math.max(1,Math.min(4,channel))-1]; }
+    private void drawConnections(Canvas c) {
+        if(owner.selected<0||owner.selected>=owner.build.size())return;
+        Ramp chosen=owner.build.get(owner.selected);if(!chosen.linked())return;
+        java.util.ArrayList<Ramp> all=new java.util.ArrayList<>(owner.current.fixed);all.addAll(owner.build);
+        paint.setColor(channelColor(chosen.channel));paint.setAlpha(110);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(2);
+        paint.setPathEffect(new DashPathEffect(new float[]{7,9},0));
+        for(Ramp r:all)if(r.linked()&&r.channel==chosen.channel&&r.kind!=chosen.kind)c.drawLine((float)chosen.x,(float)chosen.y,(float)r.x,(float)r.y,paint);
+        fill(MainActivity.INK);
+    }
+    private void drawLinked(Canvas c,Ramp r,boolean selected,boolean ghost) {
+        boolean open=!ghost&&!preview&&owner.engine!=null&&owner.engine.isOpen(r);
+        int color=channelColor(r.channel);float half=(float)r.length/2;
+        if(r.kind==Ramp.Kind.SWITCH) {
+            fill(0xFFDBC9A4);c.drawCircle(0,0,28,paint);
+            fill(color);c.drawCircle(0,0,open?19:23,paint);
+            fill(Color.WHITE);paint.setTextSize(20);paint.setTypeface(Typeface.DEFAULT_BOLD);c.drawText(open?"✓":String.valueOf(r.channel),-7,7,paint);paint.setTypeface(Typeface.DEFAULT);
+            if(selected){paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);c.drawCircle(0,0,34,paint);}
+        } else {
+            fill(open?(color&0x00FFFFFF)|0x33000000:color);c.drawRoundRect(-half-12,-12,half+12,12,8,8,paint);
+            if(!open){paint.setColor(0x77FFFFFF);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);for(float x=-half+8;x<half;x+=24)c.drawLine(x,-9,x+10,9,paint);}
+            fill(color);c.drawCircle(-half,0,16,paint);c.drawCircle(half,0,16,paint);
+            fill(Color.WHITE);paint.setTextSize(17);c.drawText(String.valueOf(r.channel),-half-5,6,paint);c.drawText(String.valueOf(r.channel),half-5,6,paint);
+            if(selected||ghost){paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);paint.setPathEffect(new DashPathEffect(new float[]{8,6},0));c.drawRoundRect(-half-17,-17,half+17,17,9,9,paint);}
+        }
+        if(ghost){fill(color);paint.setTextSize(16);c.drawText(r.label()+" · "+r.channelLabel(),-32,-43,paint);}
     }
     private void drawFan(Canvas c,Ramp r,boolean selected,boolean ghost) {
         float range=(float)r.length,far=35+(range+32)*0.22f;

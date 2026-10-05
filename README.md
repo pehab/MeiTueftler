@@ -2,11 +2,11 @@
 
 Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Murmeln, Holzrampen, Trampoline, Blöcke, Wind und eigene Ideen.
 
-**Version 0.3.0 · versionCode 4 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
+**Version 0.4.0 · versionCode 5 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
 
 ## Spielen
 
-- 20 frei wählbare Aufgaben und ein freier Bauplatz mit bis zu 20 Bauteilen.
+- 24 frei wählbare Aufgaben und ein freier Bauplatz mit bis zu 20 Bauteilen.
 - Mit **＋ Brett**, **＋ Trampolin**, **＋ Block** oder **＋ Ventilator** ein Bauteil hinzufügen, antippen und mit dem Finger verschieben.
 - **Bretter** leiten die Murmel weiter. **Trampoline** geben einen Rückstoß nach oben; ihre Neigung verändert die Sprungrichtung. **Blöcke** sind dicke Begrenzungen, die auch als kurze Rampen dienen.
 - Aufgaben 11–16 führen Sprünge, Blöcke und Kombinationen ein. Aufgaben 17–20 führen den Ventilator ein. Die ursprünglichen Aufgaben und gespeicherten Bauwerke bleiben erhalten.
@@ -21,13 +21,25 @@ Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Murmeln, Holzrampe
 - Fortschritt, Aufbauten und Toneinstellung werden auf dem Gerät gespeichert. Töne lassen sich ausschalten.
 - Hoch- und Querformat werden unterstützt; auf Tablets empfiehlt sich Querformat für die große Baufläche.
 
-Eine Murmel, vier Bauteilarten, feste Hindernisse und ein Zielkorb bilden den Baukasten. Hebel, bewegliche Maschinen, Motoren und mehrere Murmeln sind noch nicht enthalten. Die vereinfachte Physik simuliert Schwerkraft, Kollisionen und Rollverluste; sie ist kein wissenschaftliches Messwerkzeug. Luft ist ein vereinfachter Kraftkegel; Bauteile schirmen ihn in dieser Variante nicht ab.
+Eine Murmel, sechs Bauteilarten, feste Hindernisse und ein Zielkorb bilden den Baukasten. Hebel, bewegliche Maschinen, Motoren und mehrere Murmeln sind noch nicht enthalten. Die vereinfachte Physik simuliert Schwerkraft, Kollisionen und Rollverluste; sie ist kein wissenschaftliches Messwerkzeug. Luft ist ein vereinfachter Kraftkegel; Bauteile schirmen ihn in dieser Variante nicht ab.
+
+## Schalter und Türen
+
+- **＋ Schalter** setzt einen durchlässigen Berührungssensor; **＋ Tür** eine geschlossene Barriere.
+- Ein Bauteil auswählen und über **Verbindung** Rot 1, Blau 2, Gelb 3 oder Grün 4 wählen. Gleichfarbige Türen öffnen bei Berührung eines Schalters und bleiben bis zum nächsten Versuch offen.
+- Farbe und Zahl sind beide sichtbar; beim Auswählen verbinden gestrichelte Linien passende Bauteile. Mehrere Türen können denselben Schalter nutzen.
+- Aufgaben 21–24 führen Schalter mit Rampen, Trampolinen und Wind ein. Die erste hat einen festen Schalter; in den weiteren wird der Schalter selbst gebaut und zugeordnet.
+- **Für Eltern · Info** zeigt Version, lokale Datenspeicherung und die optionale Diagnose nach einer Erwachsenenabfrage.
+
+## Firebase und Play Store
+
+Die konkrete Einrichtung und der lokale Release-Ablauf stehen in [docs/RELEASE.md](docs/RELEASE.md). Die Store-Beschreibung steht in [docs/STORE-LISTING.md](docs/STORE-LISTING.md); [docs/PRIVACY-DRAFT.md](docs/PRIVACY-DRAFT.md) ist ein zu vervollständigender Datenschutzentwurf.
 
 ## APK herunterladen
 
 Die direkt installierbare APK liegt unter **[Releases](https://github.com/pehab/MeiTueftler/releases)**. Jeder erfolgreiche Build auf `main` veröffentlicht automatisch ein Testrelease mit APK. Die Veröffentlichung wartet auf Tests, Lint, Build und Emulator-Smoke-Test.
 
-Tags haben das Format `v0.3.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
+Tags haben das Format `v0.4.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
 
 **Wechsel von den ersten Testbuilds:** Deren Signaturen wechselten ungewollt zwischen CI-Läufen. Bei einem Signaturwechsel muss die bisherige Test-App deinstalliert werden; dadurch wird der lokale Fortschritt gelöscht. Die neuen Speicherformate lesen weiterhin alte Bauwerke, wenn die App-Daten erhalten bleiben. Nach einmaliger Einrichtung des festen Schlüssels bleiben zukünftige Signaturen gleich. APK-Updates benötigen außerdem einen höheren `versionCode`.
 
@@ -42,7 +54,7 @@ bash gradlew testDebugUnitTest lintDebug assembleDebug
 - `game/`: Android-unabhängiges Java-Modell, Level und Physik mit festen Schritten (240 Hz).
 - `MainActivity`: Navigation, Bedienelemente und lokale Speicherung.
 - `WorkshopView`: skalierbare Canvas-Grafik und Drag-Gesten; die Bildschirmauflösung verändert die Physik nicht.
-- Unit-Tests prüfen insbesondere alle 20 Referenzlösungen, Federrückstoß, dicke Blöcke und gerichteten Wind, schnelle Kollisionen, Wiederholbarkeit und Baurücksetzung.
+- Unit-Tests prüfen insbesondere alle 24 Referenzlösungen, Federrückstoß, dicke Blöcke und gerichteten Wind, schnelle Kollisionen, Wiederholbarkeit und Baurücksetzung.
 - GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst eine Brett-, eine Trampolin- und eine Ventilator-Aufgabe und prüft die neue Werkzeugleiste, gespeicherte Bauteilarten, benannte Erfindungen samt Kopien und Änderungen nach einem Neustart, Rückgängig, Hochformat und die System-Zurück-Taste. Screenshots dokumentieren Menü, Aufgaben, Baufläche und Erfolg.
 
-Die App verwendet keine Netzberechtigung, Konten, Werbung, In-App-Käufe oder Analysedienste. Die Grafiken werden direkt mit Canvas gezeichnet.
+Die App verwendet keine Konten, Werbung, In-App-Käufe oder Google Analytics. Das Firebase-SDK bringt eine Netzberechtigung mit; Firebase wird erst bei eingerichteter Konfiguration und ausdrücklicher Zustimmung im Elternbereich gestartet. Spielen funktioniert offline. Die Grafiken werden direkt mit Canvas gezeichnet.

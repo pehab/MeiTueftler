@@ -55,7 +55,14 @@ def node(prefix, attr="text", timeout=15):
 
 def tap(prefix):
     # Toolbars can scroll on smaller screens as the construction kit grows.
-    for _ in range(5):
+    root = tree()
+    if not any(i.get("text", "").strip().casefold().startswith(prefix.strip().casefold()) for i in root.iter("node")):
+        scrolls = [i for i in root.iter("node") if i.get("scrollable") == "true"]
+        if scrolls:
+            x1,y1,x2,y2=map(int,re.findall(r"\d+",scrolls[-1].get("bounds")))
+            for _ in range(3):
+                adb("shell","input","swipe",str((x1+x2)//2),str(y1+30),str((x1+x2)//2),str(y2-30),"250")
+    for _ in range(7):
         root = tree()
         found = [i for i in root.iter("node") if i.get("text", "").strip().casefold().startswith(prefix.strip().casefold())]
         if found:
@@ -79,7 +86,7 @@ def screenshot(name):
 
 
 def open_first_level():
-    tap("20 Murmel-Aufgaben")
+    tap("24 Murmel-Aufgaben")
     node("  Deine Murmel-Aufgaben")
     tap("1 · Die erste Rampe")
     node("Baufläche", "content-desc")
@@ -102,7 +109,7 @@ print(launch, flush=True)
 assert "Error" not in launch and "Status: ok" in launch, launch
 node("MeiTüftler", timeout=30)
 screenshot("menu")
-tap("20 Murmel-Aufgaben")
+tap("24 Murmel-Aufgaben")
 node("  Deine Murmel-Aufgaben")
 screenshot("levels")
 tap("1 · Die erste Rampe")
@@ -137,7 +144,7 @@ for entry in legacy.findall("string"):
 subprocess.run(["adb", "shell", "run-as", PACKAGE, "tee", "shared_prefs/workshop.xml"],
                input=ET.tostring(legacy), stdout=subprocess.DEVNULL, check=True)
 adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
-node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   3 / 60 Sterne")
+node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   3 / 72 Sterne")
 open_first_level()
 node("Bauteile: 1 / 3")
 screenshot("restored")
@@ -151,7 +158,7 @@ node("MeiTüftler")
 assert adb("shell", "pidof", PACKAGE).strip()
 # The second toolbox must be usable, not merely drawn on screen.
 adb("shell", "wm", "size", "1280x800")
-tap("20 Murmel-Aufgaben")
+tap("24 Murmel-Aufgaben")
 for _ in range(5):
     if any(i.get("text", "").startswith("11 · Hoch hinaus") for i in tree().iter("node")):
         break
@@ -191,7 +198,7 @@ tap("‹ Menü")
 time.sleep(1)
 adb("shell", "am", "force-stop", PACKAGE)
 adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
-node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   6 / 60 Sterne")
+node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   6 / 72 Sterne")
 tap("Freier Bauplatz")
 node("Bauteile: 2 / 20")
 board = node("Baufläche", "content-desc")
@@ -201,7 +208,7 @@ node("Block 2 · 5° · 160")
 screenshot("new-elements-restored")
 # New air mechanic, then named inventions survive a full process restart.
 tap("‹ Menü")
-tap("20 Murmel-Aufgaben")
+tap("24 Murmel-Aufgaben")
 for _ in range(6):
     if any(i.get("text", "").startswith("17 · Frischer Wind") for i in tree().iter("node")):
         break
@@ -273,7 +280,55 @@ adb("shell","input","tap",str((x1+x2)//2),str((y1+y2)//2))
 node("Ventilator 3 · -60° · 320")
 node("Stärke: sanft")
 screenshot("invention-restored")
+# Pair a user-built switch and door, save, then check their channels after restart.
+tap("＋ Schalter")
+tap("Verbindung: Rot 1")
+node("Verbindung: Blau 2")
+board=node("Baufläche","content-desc")
+x1,y1,x2,y2=map(int,re.findall(r"\d+",board.get("bounds")))
+scale=min((x2-x1-12)/1000,(y2-y1-12)/600)
+ox=x1+(x2-x1-1000*scale)/2;oy=y1+(y2-y1-600*scale)/2
+adb("shell","input","swipe",str(round(ox+500*scale)),str(round(oy+300*scale)),str(round(ox+250*scale)),str(round(oy+110*scale)),"650")
+tap("＋ Tür")
+tap("Verbindung: Rot 1")
+node("Verbindung: Blau 2")
+screenshot("switch-door-built")
+tap("Speichern")
+tap("Aktualisieren")
+tap("‹ Menü")
+time.sleep(1)
+adb("shell","am","force-stop",PACKAGE)
+adb("shell","am","start","-W","-n",f"{PACKAGE}/.MainActivity")
+tap("Meine Erfindungen")
+tap("Windmaschine")
+node("Bauteile: 5 / 20")
+board=node("Baufläche","content-desc")
+x1,y1,x2,y2=map(int,re.findall(r"\d+",board.get("bounds")))
+adb("shell","input","tap",str((x1+x2)//2),str((y1+y2)//2))
+node("Tür 5 · 0° · 160")
+node("Verbindung: Blau 2")
+screenshot("switch-door-restored")
+# Solve the introductory fixed switch/door puzzle through the real UI.
+tap("‹ Menü")
+tap("24 Murmel-Aufgaben")
+tap("21 · Sesam, öffne dich!")
+board=node("Baufläche","content-desc")
+tap("＋ Brett")
+x1,y1,x2,y2=map(int,re.findall(r"\d+",board.get("bounds")))
+scale=min((x2-x1-12)/1000,(y2-y1-12)/600)
+ox=x1+(x2-x1-1000*scale)/2;oy=y1+(y2-y1-600*scale)/2
+adb("shell","input","swipe",str(round(ox+500*scale)),str(round(oy+300*scale)),str(round(ox+300*scale)),str(round(oy+230*scale)),"650")
+tap("＋ Länger")
+screenshot("door-puzzle-built")
+tap("▶ Ausprobieren")
+node("Geschafft!",timeout=20)
+screenshot("door-puzzle-solved")
+tap("Weiter tüfteln")
+tap("‹ Menü")
+# No Firebase provider may start, including when the SDK is linked but unconfigured.
+assert "FirebaseInitProvider" not in adb("shell","dumpsys","package",PACKAGE)
+assert "com.google.firebase.analytics" not in adb("shell","dumpsys","package",PACKAGE)
 log = adb("logcat", "-d", "-b", "crash")
 (OUTPUT / "crash.log").write_text(log)
 assert "FATAL EXCEPTION" not in log, log
-print("PASS: original puzzle, trampoline puzzle, new toolbox, typed persistence, legacy builds, undo, rotation, fan puzzle, named inventions and Back")
+print("PASS: original puzzle, trampoline puzzle, new toolbox, typed persistence, legacy builds, undo, rotation, fan puzzle, named inventions, switch-door puzzle, saved channels, opt-in Firebase manifest and Back")

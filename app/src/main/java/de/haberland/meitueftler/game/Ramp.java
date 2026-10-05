@@ -1,11 +1,13 @@
 package de.haberland.meitueftler.game;
 
 public final class Ramp {
-    public enum Kind { PLANK, TRAMPOLINE, BLOCK, FAN }
+    public enum Kind { PLANK, TRAMPOLINE, BLOCK, FAN, SWITCH, DOOR }
     public final Kind kind;
-    public int power=2;
-    public String label() { return kind==Kind.FAN?"Ventilator":kind==Kind.TRAMPOLINE?"Trampolin":kind==Kind.BLOCK?"Block":"Brett"; }
-    public double halfThickness() { return kind==Kind.FAN?32:kind==Kind.BLOCK?24:5; }
+    public int power=2, channel=1;
+    public boolean linked() { return kind==Kind.SWITCH||kind==Kind.DOOR; }
+    public String channelLabel() { return new String[]{"Rot 1","Blau 2","Gelb 3","Grün 4"}[Math.max(1,Math.min(4,channel))-1]; }
+    public String label() { return kind==Kind.SWITCH?"Schalter":kind==Kind.DOOR?"Tür":kind==Kind.FAN?"Ventilator":kind==Kind.TRAMPOLINE?"Trampolin":kind==Kind.BLOCK?"Block":"Brett"; }
+    public double halfThickness() { return kind==Kind.SWITCH?24:kind==Kind.DOOR?12:kind==Kind.FAN?32:kind==Kind.BLOCK?24:5; }
     public double x, y, length, angle;
     public final boolean fixed;
     public Ramp(double x, double y, double length, double angle, boolean fixed) {
@@ -15,9 +17,9 @@ public final class Ramp {
         this.kind=kind;
         this.x=x; this.y=y; this.length=length; this.angle=angle; this.fixed=fixed;
     }
-    public Ramp copy() { Ramp r=new Ramp(x,y,length,angle,fixed,kind);r.power=power;return r; }
-    public double dx() { return kind==Kind.FAN?0:Math.cos(Math.toRadians(angle))*length/2; }
-    public double dy() { return kind==Kind.FAN?0:Math.sin(Math.toRadians(angle))*length/2; }
+    public Ramp copy() { Ramp r=new Ramp(x,y,length,angle,fixed,kind);r.power=power;r.channel=channel;return r; }
+    public double dx() { return (kind==Kind.FAN||kind==Kind.SWITCH)?0:Math.cos(Math.toRadians(angle))*length/2; }
+    public double dy() { return (kind==Kind.FAN||kind==Kind.SWITCH)?0:Math.sin(Math.toRadians(angle))*length/2; }
     public static double normalizeAngle(double angle) { return ((angle+180)%360+360)%360-180; }
     public String powerLabel() { return power==1?"sanft":power==3?"kräftig":"mittel"; }
     /** Visible widening cone; weight is zero behind the fan or outside its air stream. */
@@ -29,7 +31,7 @@ public final class Ramp {
         return 1-0.55*(along-32)/length;
     }
     public void clamp() {
-        if(kind==Kind.FAN) { x=Math.max(42,Math.min(958,x));y=Math.max(42,Math.min(558,y));return; }
+        if(kind==Kind.FAN||kind==Kind.SWITCH) { x=Math.max(42,Math.min(958,x));y=Math.max(42,Math.min(558,y));return; }
         // Include the visible spring base and thick rounded ends, even at steep angles.
         double padding=(kind==Kind.TRAMPOLINE?37:halfThickness())+5;
         double radians=Math.toRadians(angle);
@@ -41,7 +43,7 @@ public final class Ramp {
         y=Math.max(marginY,Math.min(600-marginY,y));
     }
     public double distance(double px,double py) {
-        if(kind==Kind.FAN)return Math.max(0,Math.hypot(px-x,py-y)-32);
+        if(kind==Kind.FAN||kind==Kind.SWITCH)return Math.max(0,Math.hypot(px-x,py-y)-halfThickness());
         double ax=x-dx(),ay=y-dy(),bx=x+dx(),by=y+dy();
         double t=Math.max(0,Math.min(1,((px-ax)*(bx-ax)+(py-ay)*(by-ay))/(length*length)));
         return Math.max(0,Math.hypot(px-ax-t*(bx-ax),py-ay-t*(by-ay))-halfThickness());

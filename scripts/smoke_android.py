@@ -9,6 +9,7 @@ from pathlib import Path
 PACKAGE = "de.haberland.meitueftler"
 OUTPUT = Path("screenshots")
 OUTPUT.mkdir(exist_ok=True)
+launcher_recoveries = 0
 
 
 def adb(*args):
@@ -16,8 +17,25 @@ def adb(*args):
 
 
 def tree():
+    global launcher_recoveries
     adb("shell", "uiautomator", "dump", "/sdcard/workshop-ui.xml")
-    return ET.fromstring(adb("shell", "cat", "/sdcard/workshop-ui.xml"))
+    root = ET.fromstring(adb("shell", "cat", "/sdcard/workshop-ui.xml"))
+    # Some cold emulator boots show an ANR from Pixel Launcher after wm resize.
+    # Recover only this exact system app once. Never dismiss a MeiTüftler ANR.
+    if any(i.get("package") == "android" and i.get("text") == "Pixel Launcher isn't responding"
+           for i in root.iter("node")):
+        screenshot("emulator-launcher-anr")
+        if launcher_recoveries:
+            raise AssertionError("Pixel Launcher failed repeatedly on the emulator")
+        close = next(i for i in root.iter("node")
+                     if i.get("resource-id") == "android:id/aerr_close")
+        x1, y1, x2, y2 = map(int, re.findall(r"\d+", close.get("bounds")))
+        adb("shell", "input", "tap", str((x1+x2)//2), str((y1+y2)//2))
+        launcher_recoveries += 1
+        print("Recovered the emulator's Pixel Launcher ANR; continuing app checks")
+        adb("shell", "uiautomator", "dump", "/sdcard/workshop-ui.xml")
+        root = ET.fromstring(adb("shell", "cat", "/sdcard/workshop-ui.xml"))
+    return root
 
 
 def node(prefix, attr="text", timeout=15):

@@ -45,7 +45,7 @@ Die Firebase-Konfiguration für MeiTüftler ist integriert. Die optionale Abstur
 
 Icon, Feature-Grafik, deutsche Texte und sechs Store-Bilder mit echten Spielansichten liegen unter [docs/play-store](docs/play-store).
 
-Die konkrete Einrichtung und der lokale Release-Ablauf stehen in [docs/RELEASE.md](docs/RELEASE.md). Die Store-Beschreibung steht in [docs/STORE-LISTING.md](docs/STORE-LISTING.md); [docs/PRIVACY-DRAFT.md](docs/PRIVACY-DRAFT.md) ist ein zu vervollständigender Datenschutzentwurf.
+Die konkrete Einrichtung und der lokale Release-Ablauf stehen in [docs/RELEASE.md](docs/RELEASE.md). Die Store-Beschreibung steht in [docs/STORE-LISTING.md](docs/STORE-LISTING.md); die aktuelle [Datenschutzerklärung](PRIVACY_POLICY.md) liegt im Repository.
 
 ## APK herunterladen
 
@@ -69,7 +69,7 @@ bash gradlew testDebugUnitTest lintDebug assembleDebug
 - Unit-Tests prüfen insbesondere alle 24 Referenzlösungen, Federrückstoß, dicke Blöcke und gerichteten Wind, schnelle Kollisionen, Wiederholbarkeit und Baurücksetzung.
 - GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst eine Brett-, eine Trampolin- und eine Ventilator-Aufgabe und prüft die neue Werkzeugleiste, gespeicherte Bauteilarten, benannte Erfindungen samt Kopien und Änderungen nach einem Neustart, Rückgängig, Hochformat und die System-Zurück-Taste. Screenshots dokumentieren Menü, Aufgaben, Baufläche und Erfolg.
 
-Die App verwendet keine Konten, Werbung, In-App-Käufe oder Google Analytics. Das Firebase-SDK bringt eine Netzberechtigung mit; Firebase wird erst bei eingerichteter Konfiguration und ausdrücklicher Zustimmung im Elternbereich gestartet. Spielen funktioniert offline. Die Grafiken werden direkt mit Canvas gezeichnet.
+Die App verwendet keine Konten, Werbung, In-App-Käufe, Google Analytics oder Firebase Analytics. Das Firebase-SDK bringt eine Netzberechtigung mit; Firebase wird erst bei eingerichteter Konfiguration und ausdrücklicher Zustimmung im Elternbereich gestartet. Spielen funktioniert offline. Die Grafiken werden direkt mit Canvas gezeichnet.
 
 ### Saubere Builds
 

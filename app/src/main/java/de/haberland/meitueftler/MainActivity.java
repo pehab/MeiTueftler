@@ -143,27 +143,47 @@ public final class MainActivity extends ComponentActivity {
         root.addView(text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.",14,false));
     }
     private Button categoryCard(String title,boolean vehicle,ScrollView scroll,boolean wide,Runnable action) {
-        Button card=button(title,false,action);card.setTextSize(19);card.setTextColor(vehicle?ORANGE:TEAL);
+        Button card=new CategoryButton(vehicle,scroll,wide);card.setText(title);card.setAllCaps(false);
+        card.setMinHeight(dp(48));card.setMinimumWidth(0);card.setMinWidth(0);card.setOnClickListener(v->action.run());
+        card.setTextSize(19);card.setTextColor(vehicle?ORANGE:TEAL);
         card.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));card.setGravity(Gravity.CENTER);
         card.setPadding(dp(14),dp(10),dp(14),dp(14));card.setCompoundDrawablePadding(dp(6));
         GradientDrawable bg=new GradientDrawable();bg.setColor(vehicle?0xFFFFEADC:0xFFE0F1EA);
         bg.setCornerRadius(dp(22));bg.setStroke(dp(2),vehicle?0xFFE9C7AB:0xFFB4D6CB);
         card.setBackground(new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(0x22000000),bg,null));
         card.setElevation(dp(2));
-        MenuArtwork art=new MenuArtwork(vehicle);art.setBounds(0,0,dp(300),dp(150));card.setCompoundDrawables(null,art,null,null);
-        card.addOnLayoutChangeListener((v,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{
-            int width=Math.max(1,right-left-card.getPaddingLeft()-card.getPaddingRight());
-            int height=Math.min(dp(230),Math.round(width*0.5f));
-            if(wide&&scroll.getHeight()>0&&card.getLayout()!=null) {
-                int room=scroll.getHeight()-dp(16)-card.getPaddingTop()-card.getPaddingBottom()
-                        -card.getLayout().getHeight()-card.getCompoundDrawablePadding();
-                height=Math.min(height,Math.max(dp(48),room));
-            }
-            if(art.getBounds().width()!=width||art.getBounds().height()!=height) {
-                art.setBounds(0,0,width,height);card.setCompoundDrawables(null,art,null,null);
-            }
-        });
         return card;
+    }
+    private final class CategoryButton extends Button {
+        private final MenuArtwork art;
+        private final ScrollView scroll;
+        private final boolean wide;
+        CategoryButton(boolean vehicle,ScrollView scroll,boolean wide) {
+            super(MainActivity.this);this.scroll=scroll;this.wide=wide;art=new MenuArtwork(vehicle);
+        }
+        @Override protected void onMeasure(int widthSpec,int heightSpec) {
+            int width=MeasureSpec.getMode(widthSpec)==MeasureSpec.UNSPECIFIED?dp(300)
+                    :Math.max(1,MeasureSpec.getSize(widthSpec)-getPaddingLeft()-getPaddingRight());
+            int height=Math.min(dp(230),Math.round(width*0.5f));
+            // Size the artwork before TextView measures its image AND caption together.
+            // Changing compound drawable bounds during layout can clip the caption.
+            int viewport=scroll.getMeasuredHeight();
+            if(viewport==0)viewport=dp(getResources().getConfiguration().screenHeightDp-220);
+            if(wide)height=Math.min(height,Math.max(dp(48),viewport-dp(16)-getPaddingTop()
+                    -getPaddingBottom()-getLineHeight()*2-getCompoundDrawablePadding()));
+            if(art.getBounds().width()!=width||art.getBounds().height()!=height) {
+                art.setBounds(0,0,width,height);setCompoundDrawables(null,art,null,null);
+            }
+            super.onMeasure(widthSpec,heightSpec);
+            if(wide&&getLayout()!=null) {
+                int room=Math.max(dp(48),viewport-dp(16)-getPaddingTop()-getPaddingBottom()
+                        -getLayout().getHeight()-getCompoundDrawablePadding());
+                if(height>room) {
+                    art.setBounds(0,0,width,room);setCompoundDrawables(null,art,null,null);
+                    super.onMeasure(widthSpec,heightSpec);
+                }
+            }
+        }
     }
     private void showMarbleMenu() {
         root.addView(button("‹ Kategorien",false,this::goBack),new LinearLayout.LayoutParams(-1,dp(48)));

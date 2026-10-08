@@ -132,8 +132,8 @@ public final class MainActivity extends ComponentActivity {
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);
         LinearLayout choices=column();boolean wide=getResources().getConfiguration().screenWidthDp>=540;
         choices.setOrientation(wide?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);choices.setGravity(Gravity.CENTER);
-        Button marbles=categoryCard("1 · Kugelbahnen\nLass die Murmel rollen!",false,()->navigate("marbles"));
-        Button machines=categoryCard("2 · Fahrzeuge\nBring deine Maschine in Fahrt!",true,()->navigate("vehicles"));
+        Button marbles=categoryCard("1 · Kugelbahnen\nLass die Murmel rollen!",false,scroll,wide,()->navigate("marbles"));
+        Button machines=categoryCard("2 · Fahrzeuge\nBring deine Maschine in Fahrt!",true,scroll,wide,()->navigate("vehicles"));
         for(Button card:new Button[]{marbles,machines}) {
             LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(wide?0:-1,-2,wide?1:0);
             lp.setMargins(dp(5),dp(8),dp(5),dp(8));choices.addView(card,lp);
@@ -142,7 +142,7 @@ public final class MainActivity extends ComponentActivity {
         root.addView(button("Für Eltern · Info",false,this::parentGate),new LinearLayout.LayoutParams(-1,dp(48)));
         root.addView(text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.",14,false));
     }
-    private Button categoryCard(String title,boolean vehicle,Runnable action) {
+    private Button categoryCard(String title,boolean vehicle,ScrollView scroll,boolean wide,Runnable action) {
         Button card=button(title,false,action);card.setTextSize(19);card.setTextColor(vehicle?ORANGE:TEAL);
         card.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));card.setGravity(Gravity.CENTER);
         card.setPadding(dp(14),dp(10),dp(14),dp(14));card.setCompoundDrawablePadding(dp(6));
@@ -154,6 +154,11 @@ public final class MainActivity extends ComponentActivity {
         card.addOnLayoutChangeListener((v,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{
             int width=Math.max(1,right-left-card.getPaddingLeft()-card.getPaddingRight());
             int height=Math.min(dp(230),Math.round(width*0.5f));
+            if(wide&&scroll.getHeight()>0&&card.getLayout()!=null) {
+                int room=scroll.getHeight()-dp(16)-card.getPaddingTop()-card.getPaddingBottom()
+                        -card.getLayout().getHeight()-card.getCompoundDrawablePadding();
+                height=Math.min(height,Math.max(dp(48),room));
+            }
             if(art.getBounds().width()!=width||art.getBounds().height()!=height) {
                 art.setBounds(0,0,width,height);card.setCompoundDrawables(null,art,null,null);
             }

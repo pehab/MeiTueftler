@@ -1,6 +1,6 @@
 # Firebase und lokaler Play-Store-Release
 
-Stand: 8. Oktober 2026. Version 0.7.0, versionCode 11, Paket de.haberland.meitueftler.
+Stand: 8. Oktober 2026. Version 0.7.1, versionCode 12, Paket de.haberland.meitueftler.
 
 ## Fragment-SDK-Warnung
 

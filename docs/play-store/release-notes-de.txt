@@ -1,7 +1,4 @@
-Neu in MeiTüftler 0.7.0:
-• Gelenke verbinden zwei Fahrzeug-Baugruppen beweglich
-• Drehantriebe mit einstellbarem Tempo und Drehsinn
-• Gummifüße für eigene Laufmaschinen ohne Räder
-• Fünf neue Aufgaben: Anhänger, Graben, Treppe und Laufmaschinen
-• Bauteil-Hilfe und klare Hinweise bei falsch gesetzten Gelenken
-• Bestehende Fahrzeuge und Kugelbahnen bleiben erhalten
+Neu in MeiTüftler 0.7.1:
+• Kreatives Hauptmenü mit zwei bebilderten Werkstattkarten
+• Kugelbahnen und Fahrzeuge auf einen Blick erkennen
+• Angepasste Kartenanordnung für Handy und Tablet

@@ -62,8 +62,8 @@ final class VehicleView extends View {
         List<VehiclePart> parts=preview?previewParts:workshop.engine==null?workshop.build:workshop.engine.parts;
         double mass=0,cx=0,cy=0;
         // Frames first, bearings on top; selection is redrawn last for clear editing.
-        for(int pass=0;pass<2;pass++)for(int i=0;i<parts.size();i++) {
-            VehiclePart p=parts.get(i);if((p.kind==VehiclePart.Kind.FRAME)!=(pass==0))continue;
+        for(int pass=0;pass<3;pass++)for(int i=0;i<parts.size();i++) {
+            VehiclePart p=parts.get(i);if(p.drawLayer()!=pass)continue;
             boolean powered=preview||workshop.connected(i);
             drawPart(c,p,!preview&&i==workshop.selected,powered,false);
             if(powered){mass+=p.mass();cx+=p.x*p.mass();cy+=p.y*p.mass();}
@@ -96,6 +96,15 @@ final class VehicleView extends View {
             c.save();if(!preview&&workshop.engine!=null&&powered)c.rotate((float)(workshop.engine.time*110/p.radius()*180/Math.PI*workshop.engine.motorDirection()));
             for(int spoke=0;spoke<8;spoke++){c.rotate(45);fill(0xFF416B68);c.drawRect(-2,-r+10,2,-6,paint);}c.restore();
             fill(0xFFEBC783);c.drawCircle(0,0,7,paint);
+        } else if(p.joint()) {
+            boolean valid=preview||ghost||workshop.validJoint(workshop.engine==null?workshop.build.indexOf(p):workshop.engine.parts.indexOf(p));
+            fill(valid?0xFFE3C16C:0xFFDA6339);c.drawCircle(0,0,14,paint);
+            fill(MainActivity.INK);c.drawCircle(0,0,9,paint);
+            fill(valid?MainActivity.TEAL:Color.WHITE);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);c.drawLine(-6,0,6,0,paint);
+            if(p.kind==VehiclePart.Kind.DRIVE)for(int tooth=0;tooth<8;tooth++){c.rotate(45);c.drawLine(0,-14,0,-18,paint);}
+        } else if(p.kind==VehiclePart.Kind.FOOT) {
+            fill(0xFF263C3E);c.drawCircle(0,0,r,paint);fill(0xFFCCB372);c.drawRoundRect(-11,-6,11,6,4,4,paint);
+            fill(0xFF567C70);for(int tooth=-12;tooth<=12;tooth+=6)c.drawRect(tooth-2,10,tooth+2,15,paint);
         } else if(p.kind==VehiclePart.Kind.MOTOR) {
             fill(MainActivity.TEAL);c.drawRoundRect(-24,-24,24,24,9,9,paint);fill(0xFFBED9CC);c.drawRoundRect(-20,-20,20,-12,4,4,paint);
             label(c,"M",-12,13,28,Color.WHITE);fill(0xFFEAC783);c.drawCircle(-18,17,3,paint);c.drawCircle(18,17,3,paint);
@@ -119,7 +128,7 @@ final class VehicleView extends View {
             case MotionEvent.ACTION_DOWN:
                 if(x<0||x>1000||y<0||y>600)return false;dragging=false;remembered=false;workshop.selected=-1;
                 // Exact hit before generous touch targets, so bearings remain selectable on a frame.
-                for(int pass=0;pass<2&&workshop.selected<0;pass++)for(int i=workshop.build.size()-1;i>=0;i--)if(workshop.build.get(i).distance(x,y)<(pass==0?4:Math.max(22,owner.dp(18)/scale))){workshop.selected=i;break;}
+                workshop.selected=VehiclePart.hitTest(workshop.build,x,y,Math.max(22,owner.dp(18)/scale));
                 if(workshop.selected>=0){VehiclePart p=workshop.build.get(workshop.selected);dragging=true;grabX=x-p.x;grabY=y-p.y;startX=p.x;startY=p.y;getParent().requestDisallowInterceptTouchEvent(true);}
                 workshop.update();invalidate();return true;
             case MotionEvent.ACTION_MOVE:move(x,y);return true;

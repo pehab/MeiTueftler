@@ -35,7 +35,7 @@ final class VehicleWorkshop {
     private final Deque<String> history=new ArrayDeque<>();
     private final List<Button> editing=new ArrayList<>();
     private VehicleView board;
-    private boolean[] connectedParts=new boolean[0];
+    private boolean[] connectedParts=new boolean[0],validJoints=new boolean[0];
     private Button run,power,direction,hint;
     private TextView selection,status;
     VehicleWorkshop(MainActivity owner,SharedPreferences prefs) { this.owner=owner;this.prefs=prefs; }
@@ -49,7 +49,7 @@ final class VehicleWorkshop {
         LinearLayout line=owner.row();owner.addEqual(line,owner.button(VehicleCatalog.LEVELS.size()+" Fahrzeug-Aufgaben",true,()->owner.navigate("vehicle_levels")));
         owner.addEqual(line,owner.button("Freie Maschinenwerkstatt",false,()->open(-1)));root.addView(line);
         root.addView(owner.button("Meine Fahrzeuge",false,()->owner.navigate("vehicle_inventions")),new LinearLayout.LayoutParams(-1,owner.dp(52)));
-        root.addView(owner.text("Berührende Teile verbinden sich. Gewicht und Schwerpunkt zählen.",14,false));
+        root.addView(owner.text("Rahmen, Räder, Gelenke und drehende Beine: Deine Idee fährt los.",14,false));
     }
     void showLevels(LinearLayout root) {
         LinearLayout header=owner.row();header.addView(owner.button("‹ Fahrzeuge",false,()->owner.navigate("vehicles")));header.addView(owner.text("  Fahrzeug-Aufgaben",25,true));root.addView(header);
@@ -73,7 +73,9 @@ final class VehicleWorkshop {
         ScrollView scroll=new ScrollView(owner);LinearLayout tools=owner.column();tools.setPadding(owner.dp(8),owner.dp(4),owner.dp(4),0);
         tools.addView(owner.text(level.task,15,false));selection=owner.text("",13,true);selection.setTextColor(MainActivity.TEAL);tools.addView(selection);
         tools(tools,edit("＋ Rahmen",()->add(VehiclePart.Kind.FRAME)),edit("＋ Rad",()->add(VehiclePart.Kind.WHEEL)));
-        tools(tools,edit("＋ Gewicht",()->add(VehiclePart.Kind.WEIGHT)),edit("↶ Zurück",this::undo));
+        tools(tools,edit("＋ Gelenk",()->add(VehiclePart.Kind.HINGE)),edit("＋ Drehantrieb",()->add(VehiclePart.Kind.DRIVE)));
+        tools(tools,edit("＋ Gewicht",()->add(VehiclePart.Kind.WEIGHT)),edit("＋ Greiffuß",()->add(VehiclePart.Kind.FOOT)));
+        tools(tools,edit("↶ Zurück",this::undo),edit("Bauteil-Hilfe",this::partHelp));
         tools(tools,edit("↶ Drehen",()->change(-10,0)),edit("Drehen ↷",()->change(10,0)));
         tools(tools,edit("− Kleiner",()->change(0,-1)),edit("＋ Größer",()->change(0,1)));
         power=edit("Motor: mittel",this::cyclePower);direction=edit("Fahrt: rechts",this::reverse);tools(tools,power,direction);
@@ -92,15 +94,20 @@ final class VehicleWorkshop {
     private VehiclePart motor() { for(VehiclePart p:build)if(p.kind==VehiclePart.Kind.MOTOR)return p;throw new IllegalStateException("Missing vehicle motor"); }
     private void add(VehiclePart.Kind kind) {
         if(build.size()>=level.maxParts()) { toast("Alle "+level.maxParts()+" Bauteile sind im Einsatz.");return; }
-        remember();VehiclePart m=motor(),p=new VehiclePart(kind,m.x,m.y-70,kind==VehiclePart.Kind.FRAME?180:kind==VehiclePart.Kind.WHEEL?32:18,0);p.clamp(level);build.add(p);selected=build.size()-1;changed();
+        remember();VehiclePart m=motor(),p=new VehiclePart(kind,m.x,m.y-70,kind==VehiclePart.Kind.FRAME?180:kind==VehiclePart.Kind.WHEEL?32:18,0);
+        if(p.joint()&&selected>=0&&selected<build.size()) { VehiclePart base=build.get(selected);p.x=base.x+Math.cos(Math.toRadians(base.angle))*base.halfLength();p.y=base.y+Math.sin(Math.toRadians(base.angle))*base.halfLength(); }p.clamp(level);build.add(p);selected=build.size()-1;changed();
     }
+    private void partHelp() {
+        new AlertDialog.Builder(owner).setTitle("Bewegliche Maschinen bauen").setMessage("Rahmen und Räder verbinden sich bei Berührung fest.\n\nGelenk: Setze den Ring genau dort hin, wo sich zwei Baugruppen berühren. Sie bleiben zusammen und können sich gegeneinander drehen. Andere Berührungen können sie weiterhin starr verbinden.\n\nDrehantrieb: Funktioniert wie ein Gelenk und dreht die äußere Baugruppe. Tippe ihn an, um Tempo und Drehsinn einzustellen. Kraft kommt über die Verbindung vom Motor; mehrere Antriebe teilen sich die Kraft.\n\nGreiffuß: Ein Gummifuß mit viel Halt für drehende Beine. Er hat keinen eigenen Antrieb.\n\nTürkis = mit dem Motor verbunden. Orange Gelenke brauchen genau zwei getrennte Baugruppen. Gestrichelt = lose.").setPositiveButton("Weiter tüfteln",null).show();
+    }
+    private VehiclePart driveTarget() { return selected>=0&&selected<build.size()&&build.get(selected).kind==VehiclePart.Kind.DRIVE?build.get(selected):motor(); }
     private void change(int angle,int size) {
         if(selected<0) { toast("Tippe zuerst ein Bauteil an.");return; }
-        VehiclePart p=build.get(selected);if(p.kind==VehiclePart.Kind.MOTOR||p.kind==VehiclePart.Kind.WEIGHT) { toast("Diesen Baustein verschiebst du mit dem Finger.");return; }
+        VehiclePart p=build.get(selected);if(p.kind==VehiclePart.Kind.MOTOR||p.kind==VehiclePart.Kind.WEIGHT||p.kind==VehiclePart.Kind.FOOT||p.joint()) { toast("Diesen Baustein verschiebst du mit dem Finger.");return; }
         remember();p.angle+=angle;p.size+=size*(p.kind==VehiclePart.Kind.WHEEL?4:20);p.clamp(level);changed();
     }
-    private void cyclePower() { remember();VehiclePart m=motor();m.power=m.power%3+1;changed(); }
-    private void reverse() { remember();motor().direction*=-1;changed(); }
+    private void cyclePower() { remember();VehiclePart m=driveTarget();m.power=m.power%3+1;changed(); }
+    private void reverse() { remember();driveTarget().direction*=-1;changed(); }
     private void remove() { if(selected<0)return;if(build.get(selected).kind==VehiclePart.Kind.MOTOR) { toast("Der Motor gehört zur Aufgabe. Du kannst ihn im Startbereich verschieben.");return; }remember();build.remove(selected);selected=-1;changed(); }
     private void undo() { if(history.isEmpty())return;decode(history.removeLast());selected=-1;changed(); }
     private void clear() {
@@ -115,9 +122,9 @@ final class VehicleWorkshop {
         if(engine==null||engine.state==VehiclePhysics.State.RUNNING||handled||owner.isFinishing())return;handled=true;update();
         if(engine.state==VehiclePhysics.State.WON) {
             owner.playTone(ToneGenerator.TONE_PROP_ACK,220);
-            int stars=1+(build.size()<=6?1:0)+(hintUsed?0:1);
+            int stars=1+(build.size()<=level.bonusParts()?1:0)+(hintUsed?0:1);
             if(!level.sandbox())prefs.edit().putInt("vehicle_stars_"+level.id,Math.max(stars,prefs.getInt("vehicle_stars_"+level.id,0))).apply();
-            AlertDialog.Builder dialog=new AlertDialog.Builder(owner).setTitle("Geschafft!  "+MainActivity.symbols('★',stars)).setMessage("Deine Konstruktion hat den Motor ins Ziel gebracht!\n\nExtra-Sterne: höchstens sechs Teile einschließlich Motor und ohne Hinweis.")
+            AlertDialog.Builder dialog=new AlertDialog.Builder(owner).setTitle("Geschafft!  "+MainActivity.symbols('★',stars)).setMessage("Deine Konstruktion hat den Motor ins Ziel gebracht!\n\nExtra-Sterne: höchstens "+level.bonusParts()+" Teile einschließlich Motor und ohne Hinweis.")
                 .setPositiveButton("Weiter tüfteln",(d,w)->toggle());
             if(!level.sandbox()&&level.id<VehicleCatalog.LEVELS.size()-1)dialog.setNegativeButton("Nächste Aufgabe",(d,w)->open(level.id+1));
             dialog.setOnCancelListener(d->{if(engine!=null)toggle();});dialog.show();
@@ -126,15 +133,20 @@ final class VehicleWorkshop {
     void update() {
         if(selection==null||build.isEmpty())return;boolean editable=engine==null;
         for(Button b:editing){b.setEnabled(editable);b.setAlpha(editable?1:0.45f);}hint.setEnabled(editable);hint.setText(hintVisible?"Hinweis aus":"Hinweis");
-        VehiclePart m=motor();power.setText(m.power==1?R.string.vehicle_motor_soft:m.power==3?R.string.vehicle_motor_strong:R.string.vehicle_motor_medium);direction.setText(m.direction==1?R.string.vehicle_right:R.string.vehicle_left);
+        VehiclePart m=motor(),target=driveTarget();
+        boolean rotating=target.kind==VehiclePart.Kind.DRIVE;
+        power.setText(rotating?(target.power==1?R.string.vehicle_drive_slow:target.power==3?R.string.vehicle_drive_fast:R.string.vehicle_drive_medium):(m.power==1?R.string.vehicle_motor_soft:m.power==3?R.string.vehicle_motor_strong:R.string.vehicle_motor_medium));
+        direction.setText(rotating?(target.direction==1?R.string.vehicle_clockwise:R.string.vehicle_counterclockwise):(m.direction==1?R.string.vehicle_right:R.string.vehicle_left));
         run.setText(editable?"▶ Ausprobieren":"↶ Weiterbauen");
-        int[] groups=VehiclePhysics.connections(build);int motorRoot=groups[build.indexOf(m)];int connected=0;connectedParts=new boolean[groups.length];for(int i=0;i<groups.length;i++){connectedParts[i]=groups[i]==motorRoot;if(connectedParts[i])connected++;}
+        VehicleAssembly assembly=new VehicleAssembly(build);validJoints=assembly.validJoint;int[] groups=assembly.connectedRoots;int motorRoot=groups[build.indexOf(m)];int connected=0;connectedParts=new boolean[groups.length];for(int i=0;i<groups.length;i++){connectedParts[i]=groups[i]==motorRoot;if(connectedParts[i])connected++;}
         String label=connected+" / "+build.size()+" Teile verbunden · max. "+level.maxParts();
         if(selected>=0&&selected<build.size()) { VehiclePart p=build.get(selected);label=p.label()+" · "+(int)p.angle+"°"+(p.kind==VehiclePart.Kind.FRAME?" · Länge "+(int)p.size:p.kind==VehiclePart.Kind.WHEEL?" · Radius "+(int)p.size:"")+"\n"+label; }
+        if(selected>=0&&selected<build.size()&&build.get(selected).joint())label+=(validJoints[selected]?"\nGelenk verbindet zwei Baugruppen":"\nGelenk braucht genau zwei getrennte Baugruppen");
         selection.setText(label);
         status.setText(hintVisible?level.hint:engine!=null?engine.state==VehiclePhysics.State.RUNNING?"Deine Maschine fährt. Beobachte Räder und Schwerpunkt.":engine.message:
-            "Berührende Teile verbinden sich automatisch. Türkis = am Motor; gestrichelt = lose. Das Kreuz zeigt den Schwerpunkt. Motor nur im Startfeld verschieben.");
+            assembly.invalidJoints>0?"Orange Gelenke sind noch nicht richtig verbunden. Setze sie an die Berührung zweier Baugruppen. Bauteil-Hilfe erklärt den Aufbau.":"Berührende Teile verbinden sich fest. Gelenke machen die Verbindung beweglich. Türkis = am Motor; gestrichelt = lose. Das Kreuz zeigt den Schwerpunkt.");
     }
+    boolean validJoint(int i) { return engine!=null?engine.assembly.validJoint[i]:i<validJoints.length&&validJoints[i]; }
     boolean connected(int i) { return engine!=null?engine.powered[i]:i<connectedParts.length&&connectedParts[i]; }
     void resume() { if(board!=null)board.resumeDrawing(); }
     void leave() { save();engine=null;selected=-1; }

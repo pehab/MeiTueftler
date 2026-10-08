@@ -14,6 +14,7 @@ public final class VehicleLevel {
         this.id=id;this.name=name;this.task=task;this.hint=hint;this.goalX=goalX;this.goalY=goalY;this.surfaces=java.util.Collections.unmodifiableList(new java.util.ArrayList<>(surfaces));this.solution=java.util.Collections.unmodifiableList(new java.util.ArrayList<>(solution));
     }
     public boolean sandbox() { return id<0; }
+    public int bonusParts() { return Math.max(6,solution.size()); }
     public int maxParts() { return sandbox()?SANDBOX_MAX_PARTS:MAX_PARTS; }
     public String buildKey() { return "vehicle_build_"+id+"_v1"; }
     public List<VehiclePart> emptyBuild() { return java.util.Arrays.asList(new VehiclePart(VehiclePart.Kind.MOTOR,170,445,24,0)); }

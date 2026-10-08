@@ -10,7 +10,7 @@ Willkommen in deiner Erfinderwerkstatt! Baue einen Weg für die Murmel, baue ein
 
 24 frei wählbare Aufgaben laden zum Tüfteln ein. Finde Wege durch Tunnel und versetzte Durchgänge, umgehe Sperren und erreiche hohe Galerien. Manchmal führt der Weg erst nach rechts und dann wieder zurück. Bretter leiten die Murmel weiter, Trampoline lassen sie springen und Ventilatoren geben ihr Schub. Berührt die Murmel einen Schalter, öffnen sich passende Türen. Kombiniere die Bauteile und finde deinen eigenen Weg zum Korb.
 
-In der Fahrzeugwerkstatt warten sechs weitere Aufgaben: Baue Rahmen und Räder um den Motor und lass deine Maschine automatisch ins Ziel fahren. Bewältige Hügel, Bodenwellen, Tunnel und eine steile Kletterrampe. Berührende Teile verbinden sich, lose Teile fallen herunter. Probiere große Räder, ungewöhnliche Formen oder Gewichte aus: Schwerpunkt und Motorstärke verändern das Fahrverhalten.
+In der Fahrzeugwerkstatt warten elf weitere Aufgaben: Baue Rahmen und Räder um den Motor und lass deine Maschine automatisch ins Ziel fahren. Bewältige Hügel, Bodenwellen, Tunnel, eine steile Kletterrampe, einen Graben und eine Treppe. Berührende Teile verbinden sich, lose Teile fallen herunter. Probiere große Räder, ungewöhnliche Formen oder Gewichte aus: Schwerpunkt und Motorstärke verändern das Fahrverhalten. Gelenke verbinden getrennte Baugruppen beweglich; Drehantriebe und Gummifüße machen sogar Laufmaschinen ohne Räder möglich. Eine Bauteil-Hilfe erklärt, wie alles zusammenarbeitet.
 
 Im freien Bauplatz experimentierst du mit bis zu 60 Bauteilen für Kugelbahnen oder Fahrzeuge. Speichere deine Maschinen unter einem eigenen Namen, baue weiter oder lege eine Kopie für die nächste Idee an.
 

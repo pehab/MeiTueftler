@@ -8,4 +8,9 @@
     <string name="vehicle_motor_strong">Motor: kräftig</string>
     <string name="vehicle_right">Fahrt: rechts</string>
     <string name="vehicle_left">Fahrt: links</string>
+    <string name="vehicle_drive_slow">Drehen: langsam</string>
+    <string name="vehicle_drive_medium">Drehen: mittel</string>
+    <string name="vehicle_drive_fast">Drehen: schnell</string>
+    <string name="vehicle_clockwise">Drehsinn: ↻</string>
+    <string name="vehicle_counterclockwise">Drehsinn: ↺</string>
 </resources>

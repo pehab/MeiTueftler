@@ -49,6 +49,8 @@ jobs:
       - name: Read app version
         id: version
         run: echo "name=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
+      - name: Report resolved Fragment SDK
+        run: bash gradlew --warning-mode fail :app:dependencyInsight --configuration releaseRuntimeClasspath --dependency androidx.fragment:fragment
       - name: Test, lint and build
         run: bash gradlew --warning-mode fail testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease signingReport
       - name: Upload APK

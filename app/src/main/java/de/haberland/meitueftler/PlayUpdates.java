@@ -23,9 +23,6 @@ final class PlayUpdates {
     private AppUpdateManager manager;
     private boolean prompting;
     private final InstallStateUpdatedListener listener=state->{if(state.installStatus()==InstallStatus.DOWNLOADED)offerRestart();};
-    // MainActivity extends ComponentActivity directly; no FragmentActivity or Fragment
-    // dependency is used. The Fragment compatibility lint check does not apply here.
-    @android.annotation.SuppressLint("InvalidFragmentVersionForActivityResult")
     PlayUpdates(ComponentActivity activity,Runnable save) {
         this.activity=activity;this.save=save;
         launcher=activity.registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(),result->{

@@ -1,6 +1,14 @@
 # Firebase und lokaler Play-Store-Release
 
-Stand: 8. Oktober 2026. Version 0.6.1, versionCode 9, Paket de.haberland.meitueftler.
+Stand: 8. Oktober 2026. Version 0.6.2, versionCode 10, Paket de.haberland.meitueftler.
+
+## Fragment-SDK-Warnung
+
+Die Play Console meldete `androidx.fragment:fragment:1.1.0` in Version 0.5.0 / Build 7 als veraltet. Ab 0.6.2 / Build 10 hebt eine Gradle-Abhängigkeitsbeschränkung die transitive Fragment-Bibliothek auf mindestens 1.9.1 an. Die bisherige Lint-Ausnahme im Update-Launcher wurde entfernt. Die CI protokolliert mit `dependencyInsight` die tatsächlich ausgewählte Version und den Abhängigkeitspfad für `releaseRuntimeClasspath`.
+
+Das neue AAB lokal bauen und in der Play Console hochladen. Der Screenshot bezieht sich auf das alte Bundle; ob Google das neue Bundle ohne diese Warnung einstuft, wird erst dort geprüft.
+
+Referenz: https://developer.android.com/jetpack/androidx/releases/fragment (geprüft am 8. Oktober 2026).
 
 ## Firebase einrichten
 

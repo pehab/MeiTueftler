@@ -12,8 +12,8 @@ android {
         applicationId = "de.haberland.meitueftler"
         minSdk = 26
         targetSdk = 37
-        versionCode = 9
-        versionName = "0.6.1"
+        versionCode = 10
+        versionName = "0.6.2"
         buildConfigField("boolean", "FIREBASE_CONFIGURED", firebaseConfigured.toString())
     }
     buildFeatures { buildConfig = true }
@@ -40,6 +40,11 @@ dependencies {
     implementation("com.google.android.play:app-update:2.1.0")
     implementation(platform("com.google.firebase:firebase-bom:35.0.0"))
     implementation("com.google.firebase:firebase-crashlytics")
+    constraints {
+        implementation("androidx.fragment:fragment:1.9.1") {
+            because("Update the transitive Fragment SDK flagged as outdated by Google Play")
+        }
+    }
     testImplementation("junit:junit:4.13.2")
 }
 

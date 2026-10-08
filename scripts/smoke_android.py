@@ -61,22 +61,27 @@ def node(prefix, attr="text", timeout=15):
 
 
 def tap(prefix):
+    def matching(root):
+        return [i for i in root.iter("node")
+                if i.get("text", "").strip().casefold().startswith(prefix.strip().casefold())]
+
+    root = tree()
     # Cold launches open the new category menu. Enter the marble category when needed.
     if prefix in ("24 Murmel-Aufgaben", "Freier Bauplatz", "Meine Erfindungen"):
-        root = tree()
         if any(i.get("text", "").startswith("1 · Kugelbahnen") for i in root.iter("node")):
             tap("1 · Kugelbahnen")
+            root = tree()
+    found = matching(root)
     # Toolbars can scroll on smaller screens as the construction kit grows.
-    root = tree()
-    if not any(i.get("text", "").strip().casefold().startswith(prefix.strip().casefold()) for i in root.iter("node")):
+    if not found:
         scrolls = [i for i in root.iter("node") if i.get("scrollable") == "true"]
         if scrolls:
             x1,y1,x2,y2=map(int,re.findall(r"\d+",scrolls[-1].get("bounds")))
             for _ in range(3):
                 adb("shell","input","swipe",str((x1+x2)//2),str(y1+30),str((x1+x2)//2),str(y2-30),"250")
+            root = tree()
     for _ in range(7):
-        root = tree()
-        found = [i for i in root.iter("node") if i.get("text", "").strip().casefold().startswith(prefix.strip().casefold())]
+        found = matching(root)
         if found:
             break
         scrolls = [i for i in root.iter("node") if i.get("scrollable") == "true"]
@@ -84,7 +89,9 @@ def tap(prefix):
             break
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", scrolls[-1].get("bounds")))
         adb("shell", "input", "swipe", str((x1+x2)//2), str(y2-30), str((x1+x2)//2), str(y1+30), "350")
-    item = node(prefix)
+        root = tree()
+    # Reuse the observed node instead of dumping the unchanged surface again.
+    item = found[0] if found else node(prefix)
     assert item.get("enabled") == "true", f"Disabled: {prefix}"
     x1, y1, x2, y2 = map(int, re.findall(r"\d+", item.get("bounds")))
     assert x2 > x1 and y2 > y1, f"Not visible: {prefix}"

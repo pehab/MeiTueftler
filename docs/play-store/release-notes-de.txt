@@ -1,5 +1,8 @@
-Neu in MeiTüftler 0.5.0:
-• 18 Aufgaben mit neuen Hindernissen und Lösungswegen
-• Tunnel, versetzte Durchgänge, S-Kurven und hohe Galerien
-• Mehrstufige Maschinen mit passenden Hinweisen
-• Sterne und freie Erfindungen bleiben erhalten
+Neu in MeiTüftler 0.6.0:
+• Wähle zwischen Kugelbahnen und Fahrzeugen
+• Baue eigene Maschinen aus Motor, Rahmen, Rädern und Gewichten
+• Berührende Teile verbinden sich automatisch
+• Sechs Fahrzeug-Aufgaben: Hügel, Bodenwellen, Tunnel und Kletterrampe
+• Schwerpunkt, Gewicht und Motorstärke beeinflussen die Fahrt
+• Freie Fahrzeugwerkstatt mit eigener Galerie
+• Bisherige Kugelbahnen und Spielstände bleiben erhalten

@@ -11,6 +11,15 @@ public final class VehiclePart {
     }
     public VehiclePart copy() { VehiclePart p=new VehiclePart(kind,x,y,size,angle);p.power=power;p.direction=direction;return p; }
     public boolean joint() { return kind==Kind.HINGE||kind==Kind.DRIVE; }
+    public int drawLayer() { return joint()?2:kind==Kind.FRAME?0:1; }
+    /** Exact geometry wins before enlarged finger targets, with the visible top layer first. */
+    public static int hitTest(java.util.List<VehiclePart> parts,double x,double y,double touchRadius) {
+        for(int pass=0;pass<2;pass++)for(int layer=2;layer>=0;layer--)for(int i=parts.size()-1;i>=0;i--) {
+            VehiclePart p=parts.get(i);
+            if(p.drawLayer()==layer&&p.distance(x,y)<(pass==0?4:touchRadius))return i;
+        }
+        return -1;
+    }
     public String label() { return kind==Kind.MOTOR?"Motor":kind==Kind.FRAME?"Rahmen":kind==Kind.WHEEL?"Rad":kind==Kind.HINGE?"Gelenk":kind==Kind.DRIVE?"Drehantrieb":kind==Kind.FOOT?"Greiffuß":"Gewicht"; }
     public double radius() { return joint()?14:kind==Kind.FRAME?9:kind==Kind.MOTOR?24:kind==Kind.WEIGHT||kind==Kind.FOOT?18:size; }
     public double halfLength() { return kind==Kind.FRAME?size/2:0; }

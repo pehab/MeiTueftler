@@ -165,4 +165,10 @@ public final class VehiclePhysicsTest {
         assertEquals(VehiclePhysics.State.RUNNING,e.state);
     }
 
+    @Test public void jointsRemainSelectableAboveFramesAddedLaterAndExactLegHitsWin() {
+        List<VehiclePart> parts=java.util.Arrays.asList(new VehiclePart(DRIVE,250,420,14,0),new VehiclePart(FRAME,250,420,100,90),new VehiclePart(FOOT,250,470,18,0));
+        assertEquals(0,VehiclePart.hitTest(parts,250,420,49));assertEquals(1,VehiclePart.hitTest(parts,250,445,49));
+        assertEquals(2,VehiclePart.hitTest(parts,250,470,49));assertEquals(-1,VehiclePart.hitTest(parts,900,100,49));
+    }
+
 }

@@ -460,10 +460,11 @@ vehicle_prefs = ET.fromstring(adb("shell", "run-as", PACKAGE, "cat", "shared_pre
 walker_parts = [dict(kind="MOTOR", x=170, y=400, size=24, angle=0, power=3, direction=1),
                 dict(kind="FRAME", x=170, y=420, size=160, angle=0, power=2, direction=1)]
 for x in (90, 250):
-    walker_parts += [dict(kind="FRAME", x=x, y=420, size=100, angle=90, power=2, direction=1),
+    # Create the drive before the overlaid frame: it must stay tappable on the top layer.
+    walker_parts += [dict(kind="DRIVE", x=x, y=420, size=14, angle=0, power=2, direction=1),
+                     dict(kind="FRAME", x=x, y=420, size=100, angle=90, power=2, direction=1),
                      dict(kind="FOOT", x=x, y=370, size=18, angle=0, power=2, direction=1),
-                     dict(kind="FOOT", x=x, y=470, size=18, angle=0, power=2, direction=1),
-                     dict(kind="DRIVE", x=x, y=420, size=14, angle=0, power=2, direction=1)]
+                     dict(kind="FOOT", x=x, y=470, size=18, angle=0, power=2, direction=1)]
 inventions_pref = next(i for i in vehicle_prefs.findall("string") if i.get("name") == "vehicle_inventions")
 vehicles = json.loads(inventions_pref.text)
 vehicles.append(dict(id="walker-smoke", name="Laufmaschine", build=json.dumps(walker_parts)))

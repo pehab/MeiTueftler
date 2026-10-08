@@ -63,7 +63,7 @@ final class VehicleView extends View {
         double mass=0,cx=0,cy=0;
         // Frames first, bearings on top; selection is redrawn last for clear editing.
         for(int pass=0;pass<3;pass++)for(int i=0;i<parts.size();i++) {
-            VehiclePart p=parts.get(i);if((p.joint()?2:p.kind==VehiclePart.Kind.FRAME?0:1)!=pass)continue;
+            VehiclePart p=parts.get(i);if(p.drawLayer()!=pass)continue;
             boolean powered=preview||workshop.connected(i);
             drawPart(c,p,!preview&&i==workshop.selected,powered,false);
             if(powered){mass+=p.mass();cx+=p.x*p.mass();cy+=p.y*p.mass();}
@@ -128,7 +128,7 @@ final class VehicleView extends View {
             case MotionEvent.ACTION_DOWN:
                 if(x<0||x>1000||y<0||y>600)return false;dragging=false;remembered=false;workshop.selected=-1;
                 // Exact hit before generous touch targets, so bearings remain selectable on a frame.
-                for(int pass=0;pass<2&&workshop.selected<0;pass++)for(int i=workshop.build.size()-1;i>=0;i--)if(workshop.build.get(i).distance(x,y)<(pass==0?4:Math.max(22,owner.dp(18)/scale))){workshop.selected=i;break;}
+                workshop.selected=VehiclePart.hitTest(workshop.build,x,y,Math.max(22,owner.dp(18)/scale));
                 if(workshop.selected>=0){VehiclePart p=workshop.build.get(workshop.selected);dragging=true;grabX=x-p.x;grabY=y-p.y;startX=p.x;startY=p.y;getParent().requestDisallowInterceptTouchEvent(true);}
                 workshop.update();invalidate();return true;
             case MotionEvent.ACTION_MOVE:move(x,y);return true;

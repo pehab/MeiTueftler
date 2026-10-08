@@ -35,6 +35,7 @@ final class VehicleWorkshop {
     private final Deque<String> history=new ArrayDeque<>();
     private final List<Button> editing=new ArrayList<>();
     private VehicleView board;
+    private boolean[] connectedParts=new boolean[0];
     private Button run,power,direction,hint;
     private TextView selection,status;
     VehicleWorkshop(MainActivity owner,SharedPreferences prefs) { this.owner=owner;this.prefs=prefs; }
@@ -125,15 +126,16 @@ final class VehicleWorkshop {
     void update() {
         if(selection==null||build.isEmpty())return;boolean editable=engine==null;
         for(Button b:editing){b.setEnabled(editable);b.setAlpha(editable?1:0.45f);}hint.setEnabled(editable);hint.setText(hintVisible?"Hinweis aus":"Hinweis");
-        VehiclePart m=motor();power.setText("Motor: "+(m.power==1?"sanft":m.power==3?"kräftig":"mittel"));direction.setText("Fahrt: "+(m.direction==1?"rechts":"links"));
+        VehiclePart m=motor();power.setText(m.power==1?R.string.vehicle_motor_soft:m.power==3?R.string.vehicle_motor_strong:R.string.vehicle_motor_medium);direction.setText(m.direction==1?R.string.vehicle_right:R.string.vehicle_left);
         run.setText(editable?"▶ Ausprobieren":"↶ Weiterbauen");
-        int[] groups=VehiclePhysics.connections(build);int motorRoot=groups[build.indexOf(m)];int connected=0;for(int g:groups)if(g==motorRoot)connected++;
+        int[] groups=VehiclePhysics.connections(build);int motorRoot=groups[build.indexOf(m)];int connected=0;connectedParts=new boolean[groups.length];for(int i=0;i<groups.length;i++){connectedParts[i]=groups[i]==motorRoot;if(connectedParts[i])connected++;}
         String label=connected+" / "+build.size()+" Teile verbunden · max. 24";
         if(selected>=0&&selected<build.size()) { VehiclePart p=build.get(selected);label=p.label()+" · "+(int)p.angle+"°"+(p.kind==VehiclePart.Kind.FRAME?" · Länge "+(int)p.size:p.kind==VehiclePart.Kind.WHEEL?" · Radius "+(int)p.size:"")+"\n"+label; }
         selection.setText(label);
         status.setText(hintVisible?level.hint:engine!=null?engine.state==VehiclePhysics.State.RUNNING?"Deine Maschine fährt. Beobachte Räder und Schwerpunkt.":engine.message:
             "Berührende Teile verbinden sich automatisch. Türkis = am Motor; gestrichelt = lose. Das Kreuz zeigt den Schwerpunkt. Motor nur im Startfeld verschieben.");
     }
+    boolean connected(int i) { return engine!=null?engine.powered[i]:i<connectedParts.length&&connectedParts[i]; }
     void resume() { if(board!=null)board.resumeDrawing(); }
     void leave() { save();engine=null;selected=-1; }
     void save() { if(!build.isEmpty())prefs.edit().putString(level.buildKey(),encode()).apply(); }

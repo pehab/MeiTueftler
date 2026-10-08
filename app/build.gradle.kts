@@ -12,8 +12,8 @@ android {
         applicationId = "de.haberland.meitueftler"
         minSdk = 26
         targetSdk = 37
-        versionCode = 7
-        versionName = "0.5.0"
+        versionCode = 9
+        versionName = "0.6.1"
         buildConfigField("boolean", "FIREBASE_CONFIGURED", firebaseConfigured.toString())
     }
     buildFeatures { buildConfig = true }
@@ -38,7 +38,7 @@ android {
 dependencies {
     implementation("androidx.activity:activity:1.13.0")
     implementation("com.google.android.play:app-update:2.1.0")
-    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation(platform("com.google.firebase:firebase-bom:35.0.0"))
     implementation("com.google.firebase:firebase-crashlytics")
     testImplementation("junit:junit:4.13.2")
 }

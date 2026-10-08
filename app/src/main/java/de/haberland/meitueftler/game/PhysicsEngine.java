@@ -4,7 +4,7 @@ import java.util.List;
 
 /** Fixed 240 Hz physics in a 1000 x 600 workshop. Rendering does not control simulation speed. */
 public final class PhysicsEngine {
-    public static final double STEP=1.0/240, RADIUS=14, CONTACT=19;
+    public static final double STEP=1.0/240, RADIUS=14, CONTACT=19, MAX_TIME=120;
     public enum State { RUNNING, WON, RETRY }
     public double x,y,vx,vy,time;
     public int trampolineBounces,windSteps;
@@ -46,7 +46,7 @@ public final class PhysicsEngine {
             state=State.WON;x=level.goalX;y=level.goalY-5;vx=0;vy=0;return;
         }
         stillTime = Math.hypot(vx,vy)<5 ? stillTime+STEP : 0;
-        if(y>650 || x< -50 || x>1050 || time>16 || stillTime>2) state=State.RETRY;
+        if(y>650 || x< -50 || x>1050 || time>=MAX_TIME || (!level.sandbox()&&stillTime>2)) state=State.RETRY;
     }
     private void collide(Ramp r) {
         if(r.kind==Ramp.Kind.SWITCH||(r.kind==Ramp.Kind.DOOR&&isOpen(r)))return;

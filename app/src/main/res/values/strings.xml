@@ -3,4 +3,9 @@
     <string name="retry_instructions">Noch nicht im Korb? Verändere ein Bauteil und probiere es wieder.</string>
     <string name="success_message">Deine Idee hat funktioniert!</string>
     <string name="simulation_instructions">Beobachte die Murmel. Was passiert am nächsten Bauteil?</string>
+    <string name="vehicle_motor_soft">Motor: sanft</string>
+    <string name="vehicle_motor_medium">Motor: mittel</string>
+    <string name="vehicle_motor_strong">Motor: kräftig</string>
+    <string name="vehicle_right">Fahrt: rechts</string>
+    <string name="vehicle_left">Fahrt: links</string>
 </resources>

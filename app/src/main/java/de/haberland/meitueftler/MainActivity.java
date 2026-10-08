@@ -52,10 +52,12 @@ public final class MainActivity extends ComponentActivity {
     private ToneGenerator tones;
     private PlayUpdates updates;
     private LinearLayout root;
+    private VehicleWorkshop vehicles;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         prefs=getSharedPreferences("workshop",MODE_PRIVATE);
+        vehicles=new VehicleWorkshop(this,prefs);
         updates=new PlayUpdates(this,this::saveBuild);
         sound=prefs.getBoolean("sound",true);
         Diagnostics.start(this,prefs.getBoolean("diagnostics",false));
@@ -72,27 +74,37 @@ public final class MainActivity extends ComponentActivity {
             inventionId=state.getString("inventionId");
             screen="game";
         }
+        if(state!=null&&state.getString("screen", "").startsWith("vehicle")) { screen=state.getString("screen");vehicles.restore(state.getInt("vehicleLevel",-1));vehicles.restoreSession(state); }
         rebuildScreen();
     }
     @Override public void onConfigurationChanged(Configuration config) { super.onConfigurationChanged(config);rebuildScreen(); }
     @Override protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
+        out.putString("screen",screen);
+        if(screen.startsWith("vehicle")){vehicles.save();out.putInt("vehicleLevel",vehicles.level.id);vehicles.saveSession(out);}
         if(current!=null && screen.equals("game")) { out.putInt("level",current.id);out.putInt("layoutRevision",current.layoutRevision);out.putString("build",encodeBuild());out.putBoolean("hintUsed",hintUsed);out.putString("inventionId",inventionId); }
     }
     @Override protected void onPause() { paused=true;saveBuild();super.onPause(); }
-    @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing();if(updates!=null)updates.resume(); }
+    @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing();if(vehicles!=null)vehicles.resume();if(updates!=null)updates.resume(); }
     @Override protected void onDestroy() { if(tones!=null) tones.release();if(updates!=null)updates.close();super.onDestroy(); }
-    private void goBack() { if(screen.equals("menu")) finish();else { saveBuild();engine=null;current=null;screen="menu";rebuildScreen(); } }
+    void goBack() {
+        if(screen.equals("menu")) { finish();return; }
+        saveBuild();engine=null;current=null;
+        if(screen.startsWith("vehicle")) { vehicles.leave();screen=screen.equals("vehicles")?"menu":"vehicles"; }
+        else screen=screen.equals("marbles")?"menu":"marbles";
+        rebuildScreen();
+    }
+    void navigate(String target) { saveBuild();screen=target;rebuildScreen(); }
 
     int dp(float value) { return Math.round(value*getResources().getDisplayMetrics().density); }
-    private LinearLayout column() { LinearLayout v=new LinearLayout(this);v.setOrientation(LinearLayout.VERTICAL);return v; }
-    private LinearLayout row() { LinearLayout v=new LinearLayout(this);v.setOrientation(LinearLayout.HORIZONTAL);v.setGravity(Gravity.CENTER_VERTICAL);return v; }
-    private TextView text(String value,int size,boolean bold) {
+    LinearLayout column() { LinearLayout v=new LinearLayout(this);v.setOrientation(LinearLayout.VERTICAL);return v; }
+    LinearLayout row() { LinearLayout v=new LinearLayout(this);v.setOrientation(LinearLayout.HORIZONTAL);v.setGravity(Gravity.CENTER_VERTICAL);return v; }
+    TextView text(String value,int size,boolean bold) {
         TextView t=new TextView(this);t.setText(value);t.setTextColor(INK);t.setTextSize(size);
         if(bold)t.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
         t.setGravity(Gravity.CENTER_VERTICAL);return t;
     }
-    private Button button(String title,boolean primary,Runnable action) {
+    Button button(String title,boolean primary,Runnable action) {
         Button b=new Button(this);b.setText(title);b.setAllCaps(false);b.setTextSize(15);b.setMinHeight(dp(48));b.setMinimumWidth(0);b.setMinWidth(0);
         b.setTextColor(primary?Color.WHITE:INK);b.setPadding(dp(8),dp(4),dp(8),dp(4));
         GradientDrawable bg=new GradientDrawable();bg.setColor(primary?TEAL:Color.WHITE);bg.setCornerRadius(dp(14));bg.setStroke(dp(1),primary?TEAL:Color.rgb(214,222,211));
@@ -111,9 +123,23 @@ public final class MainActivity extends ComponentActivity {
             return insets;
         });
         root.requestApplyInsets();
-        if(screen.equals("game")) showWorkshop(); else if(screen.equals("levels")) showLevels();else if(screen.equals("inventions"))showInventions();else showMenu();
+        if(screen.equals("game")) showWorkshop(); else if(screen.equals("levels")) showLevels();else if(screen.equals("inventions"))showInventions();else if(screen.equals("marbles"))showMarbleMenu();else if(screen.equals("vehicles"))vehicles.showMenu(root);else if(screen.equals("vehicle_levels"))vehicles.showLevels(root);else if(screen.equals("vehicle_game"))vehicles.showEditor(root);else if(screen.equals("vehicle_inventions"))vehicles.showInventions(root);else showMenu();
     }
     private void showMenu() {
+        root.addView(text("BAUEN · TESTEN · STAUNEN",12,true));
+        root.addView(text("MeiTüftler",36,true));
+        root.addView(text("Welche Erfindung baust du heute?",18,false));
+        root.addView(new WorkshopView(this,this,true),new LinearLayout.LayoutParams(-1,0,1));
+        LinearLayout choices=row();
+        Button marbles=button("1 · Kugelbahnen\nRampen, Murmeln und verrückte Wege",true,()->navigate("marbles"));
+        Button machines=button("2 · Fahrzeuge\nMotor, Räder und deine Maschine",true,()->navigate("vehicles"));
+        LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(100),1);a.setMargins(dp(3),dp(6),dp(3),dp(6));choices.addView(marbles,a);
+        LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(100),1);b.setMargins(dp(3),dp(6),dp(3),dp(6));choices.addView(machines,b);root.addView(choices);
+        root.addView(button("Für Eltern · Info",false,this::parentGate),new LinearLayout.LayoutParams(-1,dp(48)));
+        root.addView(text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.",14,false));
+    }
+    private void showMarbleMenu() {
+        root.addView(button("‹ Kategorien",false,this::goBack),new LinearLayout.LayoutParams(-1,dp(48)));
         TextView eyebrow=text("BAUEN · TESTEN · STAUNEN",12,true);eyebrow.setTextColor(TEAL);root.addView(eyebrow);
         root.addView(text("MeiTüftler",36,true));
         root.addView(text("Deine verrückte Erfinderwerkstatt",17,false));
@@ -130,7 +156,7 @@ public final class MainActivity extends ComponentActivity {
         TextView footer=text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   "+totalStars()+" / "+(LevelCatalog.LEVELS.size()*3)+" Sterne",13,false);
         footer.setPadding(0,dp(10),0,0);root.addView(footer);
     }
-    private static String symbols(char symbol,int count) { StringBuilder value=new StringBuilder();for(int i=0;i<count;i++)value.append(symbol);return value.toString(); }
+    static String symbols(char symbol,int count) { StringBuilder value=new StringBuilder();for(int i=0;i<count;i++)value.append(symbol);return value.toString(); }
     private int totalStars() { int total=0;for(Level l:LevelCatalog.LEVELS)total+=prefs.getInt("stars_"+l.id,0);return total; }
     private void showLevels() {
         LinearLayout header=row();header.addView(button("‹ Zurück",false,this::goBack));
@@ -186,7 +212,7 @@ public final class MainActivity extends ComponentActivity {
         if(!landscape)root.addView(runButton,runLp);
         updateControls();
     }
-    private void addEqual(LinearLayout line,View v) { LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(56),1);lp.setMargins(dp(3),dp(3),dp(3),dp(3));line.addView(v,lp); }
+    void addEqual(LinearLayout line,View v) { LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(56),1);lp.setMargins(dp(3),dp(3),dp(3),dp(3));line.addView(v,lp); }
     private void toolRow(LinearLayout parent,Button a,Button b) { LinearLayout line=row();addEqual(line,a);addEqual(line,b);parent.addView(line); }
     private Button editButton(String label,Runnable action) { Button b=button(label,false,action);editButtons.add(b);return b; }
     void rememberBuild() { history.addLast(encodeBuild());while(history.size()>30)history.removeFirst(); }
@@ -233,7 +259,7 @@ public final class MainActivity extends ComponentActivity {
             dialog.setOnCancelListener(d->{if(engine!=null)toggleSimulation();});dialog.show();
         }
     }
-    private void playTone(int tone,int duration) { if(sound&&tones!=null)try{tones.startTone(tone,duration);}catch(RuntimeException ignored){} }
+    void playTone(int tone,int duration) { if(sound&&tones!=null)try{tones.startTone(tone,duration);}catch(RuntimeException ignored){} }
     void updateControls() {
         if(runButton==null||current==null)return;
         boolean editing=engine==null;
@@ -358,5 +384,5 @@ public final class MainActivity extends ComponentActivity {
             .setNegativeButton("Abbrechen",null).setPositiveButton("Test auslösen",(x,y)->{throw new IllegalStateException("MeiTueftler manual Crashlytics test");}).show());
         dialog.show();
     }
-    private void saveBuild() { if(current!=null&&prefs!=null)prefs.edit().putString(current.buildKey(),encodeBuild()).apply(); }
+    private void saveBuild() { if(vehicles!=null)vehicles.save();if(current!=null&&prefs!=null)prefs.edit().putString(current.buildKey(),encodeBuild()).apply(); }
 }

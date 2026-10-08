@@ -1,4 +1,4 @@
-# Play-Store-Paket · MeiTüftler 0.4.1
+# Play-Store-Paket · MeiTüftler 0.6.1
 
 - icon-512.png: App-Symbol, 512×512 Pixel, PNG.
 - feature-1024x500.png: Feature-Grafik, 1024×500 Pixel, RGB-PNG ohne Transparenz.
@@ -7,7 +7,7 @@
 - store-texte-de.txt: Name, Kurzbeschreibung und Langbeschreibung auf Deutsch.
 - release-notes-de.txt: kurze Versionshinweise.
 
-Die Screenshots stammen aus dem geprüften Emulatorlauf von 0.4.0. Die gezeigten Spielansichten sind in 0.4.1 unverändert; das neue Launcher-Icon und die Diagnosefunktion werden in diesen Spielansichten nicht abgebildet.
+Die bestehenden Werbebilder zeigen Kugelbahnen aus dem geprüften Emulatorlauf von 0.4.0. Sie bilden die neue Kategorieauswahl und die Fahrzeugwerkstatt von 0.6.1 noch nicht ab.
 
 Die Feature-Grafik ist eine Werbeillustration; sie ist kein Screenshot der Spielgrafik.
 
@@ -15,6 +15,8 @@ Das AAB wie vereinbart lokal in Android Studio signieren. GitHub veröffentlicht
 
 Vorgaben geprüft am 5. Oktober 2026 anhand https://support.google.com/googleplay/android-developer/answer/9866151?hl=de
 
-## Update 0.5.0
+## Screenshots für 0.6.1
 
-18 Level wurden überarbeitet. Die vorhandenen Store-Bilder stammen aus 0.4.x. Bild 02 zeigt die alte Aufgabenliste und muss vor dem Upload von 0.5.0 durch eine aktuelle Aufnahme ersetzt werden. Die unveränderten Einführungsaufgaben in Bildern 01, 03, 04 und 05 bleiben repräsentativ. Aktuelle Screenshots der Aufgabenliste und des neuen Unterpass-Level liegen beim erfolgreichen CI-Lauf im Artefakt `interface-screenshots`.
+18 Level wurden überarbeitet. Die vorhandenen Store-Bilder stammen aus 0.4.x. Bild 02 zeigt die alte Aufgabenliste und muss vor dem Upload von 0.6.1 durch eine aktuelle Aufnahme ersetzt werden. Die unveränderten Einführungsaufgaben in Bildern 01, 03, 04 und 05 bleiben repräsentativ. Aktuelle Screenshots der Aufgabenliste und des neuen Unterpass-Level liegen beim erfolgreichen CI-Lauf im Artefakt `interface-screenshots`.
+
+Für 0.6.1 zusätzlich aktuelle Aufnahmen von Kategorieauswahl, Fahrzeug-Baufläche, verbundenem Fahrzeug, Fahrzeug-Erfolg und Fahrzeug-Galerie verwenden. Die CI legt diese im Artefakt `interface-screenshots` ab (`menu`, `vehicle-menu`, `vehicle-built`, `vehicle-solved`, `vehicle-inventions`). Die bisherigen Werbegrafiken werden durch diese Codeänderung nicht neu gerendert.

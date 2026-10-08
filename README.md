@@ -1,10 +1,28 @@
 # MeiTüftler
 
-Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Murmeln, Holzrampen, Trampoline, Blöcke, Wind und eigene Ideen.
+Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Kugelbahnen, Fahrzeuge, Motoren, Räder, Holzrampen und eigene Ideen.
 
-**Version 0.5.0 · versionCode 7 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
+**Version 0.6.0 · versionCode 8 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
 
-## Spielen
+## Zwei Werkstätten ab 0.6.0
+
+Das vorgeschaltete Menü öffnet **Kugelbahnen** oder **Fahrzeuge**. Die Kugelbahnen enthalten die bisherigen 24 Aufgaben, den freien Bauplatz und die bestehende Galerie.
+
+### Fahrzeuge
+
+- Sechs frei wählbare Aufgaben: erste Räder, Hügel, Buckelpiste, niedriger Tunnel, Berg und steile Kletterrampe. Dazu ein freier Bauplatz und eine eigene Galerie für bis zu 20 Fahrzeuge.
+- Ein Motor ist vorgegeben. Er lässt sich nur innerhalb des sichtbaren Startfelds verschieben; das ganze Motorsymbol bleibt darin. Für den Erfolg muss der Motor selbst die Zielzone erreichen.
+- Bis zu 24 Teile einschließlich Motor: frei platzierbare, rundherum drehbare Rahmen, Räder mit veränderlichem Radius und schwere Gewichte. Es gibt kein Bauraster und keine vorgefertigte Autoform.
+- Berührende Teile verbinden sich beim Ausprobieren zu festen Baugruppen. Räder besitzen einen vereinfachten drehbaren Antrieb an ihrer Befestigung. Nur am Motor angeschlossene Räder bekommen Kraft; lose Baugruppen fallen und kollidieren separat.
+- Türkise Umrisse zeigen am Motor angeschlossene Teile; gestrichelte braune Umrisse markieren lose Teile. Das Kreuz zeigt den gemeinsamen Schwerpunkt. Rahmenteile, Räder und Gewichte tragen unterschiedliche Massen bei.
+- **Motor** wechselt zwischen sanft, mittel und kräftig; **Fahrt** wechselt zwischen rechts und links. Die Maschine fährt nach **Ausprobieren** automatisch. **Weiterbauen** stellt den gespeicherten Aufbau wieder her.
+- Gewicht, Schwerpunkt, Drehträgheit, Schwerkraft, begrenzte Motorkraft und Reifenreibung wirken auf die Konstruktion. Einseitige schwere Aufbauten kippen; überladene Maschinen können am Hang stehen bleiben. Große Räder und ungewöhnliche Rad-Anordnungen sind erlaubt.
+- Drei Sterne: Ziel erreicht, höchstens sechs Teile einschließlich Motor, ohne Hinweis. Hinweise zeigen geprüfte Beispielkonstruktionen.
+- Eigene Speicherplätze für Fahrzeug-Aufbauten, Sterne und benannte Maschinen. Bestehende Murmel-Spielstände und Erfindungen bleiben erhalten.
+
+Die Fahrzeugphysik ist ein vereinfachter Baukasten, keine technische Statikberechnung. Verbindungen bleiben starr und brechen nicht. Reifen können über Reibung an Steigungen klettern; frei bewegliche Gelenke, angetriebene Beine oder Haftmechanismen für senkrechte Wände sind noch nicht enthalten.
+
+## Kugelbahnen spielen
 
 - 24 frei wählbare Aufgaben und ein freier Bauplatz mit bis zu 20 Bauteilen.
 - Mit **＋ Brett**, **＋ Trampolin**, **＋ Block** oder **＋ Ventilator** ein Bauteil hinzufügen, antippen und mit dem Finger verschieben.
@@ -21,7 +39,7 @@ Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Murmeln, Holzrampe
 - Fortschritt, Aufbauten und Toneinstellung werden auf dem Gerät gespeichert. Töne lassen sich ausschalten.
 - Hoch- und Querformat werden unterstützt; auf Tablets empfiehlt sich Querformat für die große Baufläche.
 
-Eine Murmel, sechs Bauteilarten, feste Hindernisse und ein Zielkorb bilden den Baukasten. Hebel, bewegliche Maschinen, Motoren und mehrere Murmeln sind noch nicht enthalten. Die vereinfachte Physik simuliert Schwerkraft, Kollisionen und Rollverluste; sie ist kein wissenschaftliches Messwerkzeug. Luft ist ein vereinfachter Kraftkegel; Bauteile schirmen ihn in dieser Variante nicht ab.
+Eine Murmel, sechs Bauteilarten, feste Hindernisse und ein Zielkorb bilden den Baukasten. Hebel und mehrere Murmeln sind in den Kugelbahnen noch nicht enthalten. Motoren und bewegliche Baugruppen gibt es in der Fahrzeugwerkstatt. Die vereinfachte Physik simuliert Schwerkraft, Kollisionen und Rollverluste; sie ist kein wissenschaftliches Messwerkzeug. Luft ist ein vereinfachter Kraftkegel; Bauteile schirmen ihn in dieser Variante nicht ab.
 
 ## Abwechslungsreiche Wege ab 0.5.0
 
@@ -64,10 +82,13 @@ bash gradlew testDebugUnitTest lintDebug assembleDebug
 ```
 
 - `game/`: Android-unabhängiges Java-Modell, Level und Physik mit festen Schritten (240 Hz).
-- `MainActivity`: Navigation, Bedienelemente und lokale Speicherung.
+- `MainActivity`: Kategorien, Murmel-Navigation, Bedienelemente und lokale Speicherung.
+- `game/vehicle/`: Android-unabhängige Fahrzeugteile, Kontaktgraph, Aufgaben und reproduzierbare 240-Hz-Physik mit Masse, Trägheit und Reifenantrieb.
+- `VehicleWorkshop` / `VehicleView`: Fahrzeug-Navigation, eigene Speicherung, Werkzeugleiste und freie Canvas-Platzierung.
 - `WorkshopView`: skalierbare Canvas-Grafik und Drag-Gesten; die Bildschirmauflösung verändert die Physik nicht.
+- Fahrzeugtests prüfen alle Aufgaben und kleine Platzierungsabweichungen, freie Verbindungen, Motorbegrenzung, lose Räder, Schwerpunkt, Kippen, Überladung, Richtungswechsel und reproduzierbare Simulation.
 - Unit-Tests prüfen insbesondere alle 24 Referenzlösungen, Federrückstoß, dicke Blöcke und gerichteten Wind, schnelle Kollisionen, Wiederholbarkeit und Baurücksetzung.
-- GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst eine Brett-, eine Trampolin- und eine Ventilator-Aufgabe und prüft die neue Werkzeugleiste, gespeicherte Bauteilarten, benannte Erfindungen samt Kopien und Änderungen nach einem Neustart, Rückgängig, Hochformat und die System-Zurück-Taste. Screenshots dokumentieren Menü, Aufgaben, Baufläche und Erfolg.
+- GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst eine Brett-, eine Trampolin- und eine Ventilator-Aufgabe und prüft die neue Werkzeugleiste, gespeicherte Bauteilarten, benannte Erfindungen samt Kopien und Änderungen nach einem Neustart, Rückgängig, Hochformat und die System-Zurück-Taste. Der Test baut zusätzlich ein Fahrzeug durch echte Drag-Gesten, prüft den Motorbereich, löst die erste Fahrzeug-Aufgabe, dreht die Ansicht und lädt eine gespeicherte Maschine nach Neustart. Screenshots dokumentieren beide Werkstätten, Aufgaben, Bauflächen und Erfolg.
 
 Die App verwendet keine Konten, Werbung, In-App-Käufe, Google Analytics oder Firebase Analytics. Das Firebase-SDK bringt eine Netzberechtigung mit; Firebase wird erst bei eingerichteter Konfiguration und ausdrücklicher Zustimmung im Elternbereich gestartet. Spielen funktioniert offline. Die Grafiken werden direkt mit Canvas gezeichnet.
 

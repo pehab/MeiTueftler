@@ -61,6 +61,11 @@ def node(prefix, attr="text", timeout=15):
 
 
 def tap(prefix):
+    # Cold launches open the new category menu. Enter the marble category when needed.
+    if prefix in ("24 Murmel-Aufgaben", "Freier Bauplatz", "Meine Erfindungen"):
+        root = tree()
+        if any(i.get("text", "").startswith("1 · Kugelbahnen") for i in root.iter("node")):
+            tap("1 · Kugelbahnen")
     # Toolbars can scroll on smaller screens as the construction kit grows.
     root = tree()
     if not any(i.get("text", "").strip().casefold().startswith(prefix.strip().casefold()) for i in root.iter("node")):
@@ -151,6 +156,7 @@ for entry in legacy.findall("string"):
 subprocess.run(["adb", "shell", "run-as", PACKAGE, "tee", "shared_prefs/workshop.xml"],
                input=ET.tostring(legacy), stdout=subprocess.DEVNULL, check=True)
 adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
+tap("1 · Kugelbahnen")
 node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   3 / 72 Sterne")
 open_first_level()
 node("Bauteile: 1 / 3")
@@ -205,6 +211,7 @@ tap("‹ Menü")
 time.sleep(1)
 adb("shell", "am", "force-stop", PACKAGE)
 adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
+tap("1 · Kugelbahnen")
 node("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.   ·   6 / 72 Sterne")
 tap("Freier Bauplatz")
 node("Bauteile: 2 / 20")
@@ -373,6 +380,71 @@ root=ET.fromstring(adb("shell","run-as",PACKAGE,"cat","shared_prefs/workshop.xml
 assert any(i.get("name")=="build_12_v2" and len(json.loads(i.text))==2 for i in root.findall("string"))
 assert any(i.get("name")=="build_0" for i in root.findall("string"))
 node("MeiTüftler")
+
+# Enter the vehicle category and build a real connected car through the toolbar.
+tap("2 · Fahrzeuge")
+node("Fahrzeuge")
+screenshot("vehicle-menu")
+tap("6 Fahrzeug-Aufgaben")
+tap("1 · Die ersten Räder")
+board=node("Fahrzeug-Baufläche", "content-desc")
+screenshot("vehicle-empty")
+def vehicle_drag(sx, sy, tx, ty):
+    x1,y1,x2,y2=map(int,re.findall(r"\d+",board.get("bounds")))
+    scale=min((x2-x1-12)/1000,(y2-y1-12)/600)
+    ox=x1+(x2-x1-1000*scale)/2;oy=y1+(y2-y1-600*scale)/2
+    adb("shell","input","swipe",str(round(ox+sx*scale)),str(round(oy+sy*scale)),
+        str(round(ox+tx*scale)),str(round(oy+ty*scale)),"650")
+# The motor visibly and persistently stops at the build area's right edge.
+vehicle_drag(170,445,900,445)
+vehicle_prefs=ET.fromstring(adb("shell","run-as",PACKAGE,"cat","shared_prefs/workshop.xml"))
+vehicle_build=json.loads(next(i.text for i in vehicle_prefs.findall("string") if i.get("name")=="vehicle_build_0_v1"))
+assert vehicle_build[0]["x"]<=296,vehicle_build
+tap("↶ Zurück")
+tap("＋ Rahmen")
+vehicle_drag(170,375,170,457)
+tap("＋ Rad")
+vehicle_drag(170,375,92,487)
+tap("＋ Rad")
+vehicle_drag(170,375,248,487)
+assert any("4 / 4 Teile verbunden" in i.get("text", "") for i in tree().iter("node"))
+screenshot("vehicle-built")
+tap("▶ Ausprobieren")
+node("Geschafft!",timeout=25)
+screenshot("vehicle-solved")
+tap("Weiter tüfteln")
+adb("shell","wm","size","800x1280")
+node("Fahrzeug-Baufläche","content-desc")
+screenshot("vehicle-portrait")
+adb("shell","wm","size","1280x800")
+tap("‹ Fahrzeuge")
+tap("Freie Maschinenwerkstatt")
+tap("＋ Rahmen")
+tap("＋ Rad")
+tap("Speichern")
+node("Fahrzeug speichern")
+confirm=next(i for i in tree().iter("node") if i.get("resource-id")=="android:id/button1")
+x1,y1,x2,y2=map(int,re.findall(r"\d+",confirm.get("bounds")))
+adb("shell","input","tap",str((x1+x2)//2),str((y1+y2)//2))
+time.sleep(1)
+tap("‹ Fahrzeuge")
+tap("Meine Fahrzeuge")
+node("Meine Maschine")
+screenshot("vehicle-inventions")
+adb("shell","am","force-stop",PACKAGE)
+adb("shell","am","start","-W","-n",f"{PACKAGE}/.MainActivity")
+tap("2 · Fahrzeuge")
+tap("Meine Fahrzeuge")
+tap("Meine Maschine")
+assert any("Teile verbunden · max. 24" in i.get("text", "") for i in tree().iter("node"))
+vehicle_prefs=ET.fromstring(adb("shell","run-as",PACKAGE,"cat","shared_prefs/workshop.xml"))
+assert any(i.get("name")=="vehicle_inventions" and len(json.loads(i.text))==1 for i in vehicle_prefs.findall("string"))
+assert any(i.get("name")=="build_12_v2" for i in vehicle_prefs.findall("string"))
+screenshot("vehicle-restored")
+adb("shell","input","keyevent","4")
+node("Fahrzeuge")
+adb("shell","input","keyevent","4")
+node("1 · Kugelbahnen")
 
 # No Firebase provider may start, including when the SDK is linked but unconfigured.
 assert "FirebaseInitProvider" not in adb("shell","dumpsys","package",PACKAGE)

@@ -5,7 +5,7 @@ import java.util.List;
 
 /** Deterministic rigid assemblies with wheel bearings, gravity, torque and friction contacts. */
 public final class VehiclePhysics {
-    public static final double STEP=1.0/240, GRAVITY=460, CONNECTION_GAP=1.5;
+    public static final double STEP=1.0/240, GRAVITY=460, CONNECTION_GAP=1.5, MAX_TIME=120;
     public enum State { RUNNING, WON, RETRY }
     public final List<VehiclePart> parts=new ArrayList<>();
     public final List<Body> bodies=new ArrayList<>();
@@ -105,7 +105,7 @@ public final class VehiclePhysics {
         transform();
         if(Math.abs(motorX()-level.goalX)<35&&Math.abs(motorY()-level.goalY)<85) { state=State.WON;message="Deine Maschine hat den Motor ins Ziel gebracht!";return; }
         Body b=motorBody();stalled=Math.hypot(b.vx,b.vy)<3&&Math.abs(b.omega)<0.05?stalled+STEP:0;
-        if(motorY()>680||motorX()< -100||motorX()>1100||time>35||stalled>4) {
+        if(motorY()>680||motorX()< -100||motorX()>1100||time>=MAX_TIME||(!level.sandbox()&&stalled>4)) {
             state=State.RETRY;message=looseParts()>0?"Lose Teile bekommen keinen Antrieb. Verbinde sie mit dem Motor und probiere es erneut.":"Noch nicht im Ziel. Ändere Räder, Schwerpunkt oder Motorstärke und probiere es erneut.";
         }
     }

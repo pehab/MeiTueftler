@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 
 public final class VehiclePhysicsTest {
     private static List<VehiclePart> copy(List<VehiclePart> parts) { List<VehiclePart> result=new ArrayList<>();for(VehiclePart p:parts)result.add(p.copy());return result; }
-    private static void finish(VehiclePhysics engine) { for(int i=0;i<240*36&&engine.state==VehiclePhysics.State.RUNNING;i++)engine.step(); }
+    private static void finish(VehiclePhysics engine) { for(int i=0;i<240*121&&engine.state==VehiclePhysics.State.RUNNING;i++)engine.step(); }
     @Test public void allAuthoredTasksAndFreeBuildAreSolvable() {
         List<VehicleLevel> levels=new ArrayList<>(VehicleCatalog.LEVELS);levels.add(VehicleCatalog.SANDBOX);
         for(VehicleLevel l:levels) {
@@ -73,4 +73,13 @@ public final class VehiclePhysicsTest {
         VehiclePhysics a=new VehiclePhysics(l,build),b=new VehiclePhysics(l,build);finish(a);finish(b);
         assertEquals(a.motorX(),b.motorX(),0);assertEquals(a.motorBody().angle,b.motorBody().angle,0);assertEquals(before,build.get(0).x,0);
     }
+    @Test public void stationarySandboxRunsBeyondOldLimitAndStopsAtTwoMinutes() {
+        VehiclePhysics e=new VehiclePhysics(VehicleCatalog.SANDBOX,VehicleCatalog.SANDBOX.emptyBuild());
+        for(int i=0;i<240*40;i++)e.step();
+        assertEquals(VehiclePhysics.State.RUNNING,e.state);
+        finish(e);
+        assertEquals(VehiclePhysics.State.RETRY,e.state);
+        assertEquals(120,e.time,VehiclePhysics.STEP*1.01);
+    }
+
 }

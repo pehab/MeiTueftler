@@ -91,7 +91,7 @@ final class VehicleWorkshop {
     void changed() { save();update();if(board!=null)board.invalidate(); }
     private VehiclePart motor() { for(VehiclePart p:build)if(p.kind==VehiclePart.Kind.MOTOR)return p;throw new IllegalStateException("Missing vehicle motor"); }
     private void add(VehiclePart.Kind kind) {
-        if(build.size()>=VehicleLevel.MAX_PARTS) { toast("Alle 24 Bauteile sind im Einsatz.");return; }
+        if(build.size()>=level.maxParts()) { toast("Alle "+level.maxParts()+" Bauteile sind im Einsatz.");return; }
         remember();VehiclePart m=motor(),p=new VehiclePart(kind,m.x,m.y-70,kind==VehiclePart.Kind.FRAME?180:kind==VehiclePart.Kind.WHEEL?32:18,0);p.clamp(level);build.add(p);selected=build.size()-1;changed();
     }
     private void change(int angle,int size) {
@@ -129,7 +129,7 @@ final class VehicleWorkshop {
         VehiclePart m=motor();power.setText(m.power==1?R.string.vehicle_motor_soft:m.power==3?R.string.vehicle_motor_strong:R.string.vehicle_motor_medium);direction.setText(m.direction==1?R.string.vehicle_right:R.string.vehicle_left);
         run.setText(editable?"▶ Ausprobieren":"↶ Weiterbauen");
         int[] groups=VehiclePhysics.connections(build);int motorRoot=groups[build.indexOf(m)];int connected=0;connectedParts=new boolean[groups.length];for(int i=0;i<groups.length;i++){connectedParts[i]=groups[i]==motorRoot;if(connectedParts[i])connected++;}
-        String label=connected+" / "+build.size()+" Teile verbunden · max. 24";
+        String label=connected+" / "+build.size()+" Teile verbunden · max. "+level.maxParts();
         if(selected>=0&&selected<build.size()) { VehiclePart p=build.get(selected);label=p.label()+" · "+(int)p.angle+"°"+(p.kind==VehiclePart.Kind.FRAME?" · Länge "+(int)p.size:p.kind==VehiclePart.Kind.WHEEL?" · Radius "+(int)p.size:"")+"\n"+label; }
         selection.setText(label);
         status.setText(hintVisible?level.hint:engine!=null?engine.state==VehiclePhysics.State.RUNNING?"Deine Maschine fährt. Beobachte Räder und Schwerpunkt.":engine.message:
@@ -145,7 +145,7 @@ final class VehicleWorkshop {
     }
     private void decode(String json) {
         build.clear();boolean hasMotor=false;
-        try { JSONArray array=new JSONArray(json);for(int i=0;i<array.length()&&build.size()<VehicleLevel.MAX_PARTS;i++) {
+        try { JSONArray array=new JSONArray(json);for(int i=0;i<array.length()&&build.size()<level.maxParts();i++) {
             JSONObject item=array.optJSONObject(i);if(item==null)continue;
             try {
                 VehiclePart.Kind kind=VehiclePart.Kind.valueOf(item.optString("kind"));if(kind==VehiclePart.Kind.MOTOR&&hasMotor)continue;
@@ -154,7 +154,7 @@ final class VehicleWorkshop {
                 VehiclePart p=new VehiclePart(kind,x,y,size,angle);p.power=item.optInt("power",2);p.direction=item.optInt("direction",1);p.clamp(level);build.add(p);if(kind==VehiclePart.Kind.MOTOR)hasMotor=true;
             }catch(IllegalArgumentException ignored){ }
         }}catch(JSONException ignored){ }
-        if(!hasMotor) { if(build.size()==VehicleLevel.MAX_PARTS)build.remove(build.size()-1);build.add(0,level.emptyBuild().get(0).copy()); }
+        if(!hasMotor) { if(build.size()==level.maxParts())build.remove(build.size()-1);build.add(0,level.emptyBuild().get(0).copy()); }
     }
     private JSONArray inventions() { try{return new JSONArray(prefs.getString("vehicle_inventions","[]"));}catch(JSONException ignored){return new JSONArray();} }
     private String inventionName() { JSONArray saved=inventions();for(int i=0;i<saved.length();i++){JSONObject p=saved.optJSONObject(i);if(p!=null&&p.optString("id").equals(inventionId))return p.optString("name");}return level.name; }

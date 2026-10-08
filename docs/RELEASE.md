@@ -1,6 +1,6 @@
 # Firebase und lokaler Play-Store-Release
 
-Stand: 8. Oktober 2026. Version 0.6.0, versionCode 8, Paket de.haberland.meitueftler.
+Stand: 8. Oktober 2026. Version 0.6.1, versionCode 9, Paket de.haberland.meitueftler.
 
 ## Firebase einrichten
 

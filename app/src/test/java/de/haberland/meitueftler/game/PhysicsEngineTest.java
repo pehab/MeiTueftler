@@ -209,4 +209,13 @@ public final class PhysicsEngineTest {
         finish(a);finish(b);assertEquals(a.x,b.x,0);assertEquals(a.time,b.time,0);
         double time=a.time;a.step();assertEquals(time,a.time,0);assertEquals(0,a.vx,0);assertEquals(0,a.vy,0);
     }
+    @Test public void stationarySandboxRunsBeyondOldLimitAndStopsAtTwoMinutes() {
+        PhysicsEngine e=new PhysicsEngine(LevelCatalog.SANDBOX,Collections.singletonList(new Ramp(110,300,480,0,false)));
+        for(int i=0;i<240*40;i++)e.step();
+        assertEquals(PhysicsEngine.State.RUNNING,e.state);
+        for(int i=0;i<240*81&&e.state==PhysicsEngine.State.RUNNING;i++)e.step();
+        assertEquals(PhysicsEngine.State.RETRY,e.state);
+        assertEquals(120,e.time,PhysicsEngine.STEP*1.01);
+    }
+
 }

@@ -1,8 +1,10 @@
-Neu in MeiTüftler 0.6.0:
+Neu in MeiTüftler 0.6.1:
 • Wähle zwischen Kugelbahnen und Fahrzeugen
 • Baue eigene Maschinen aus Motor, Rahmen, Rädern und Gewichten
 • Berührende Teile verbinden sich automatisch
 • Sechs Fahrzeug-Aufgaben: Hügel, Bodenwellen, Tunnel und Kletterrampe
 • Schwerpunkt, Gewicht und Motorstärke beeinflussen die Fahrt
+• Freie Bauplätze mit jeweils bis zu 60 Bauteilen
+• Bis zu zwei Minuten Simulation für Kugelbahnen und Fahrzeuge
 • Freie Fahrzeugwerkstatt mit eigener Galerie
 • Bisherige Kugelbahnen und Spielstände bleiben erhalten

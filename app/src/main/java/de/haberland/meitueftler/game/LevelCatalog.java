@@ -64,6 +64,6 @@ public final class LevelCatalog {
         return Collections.unmodifiableList(levels);
     }
     public static final List<Level> LEVELS=createLevels();
-    public static final Level SANDBOX=new Level(-1,"Freier Bauplatz","Baue mit Brettern, Trampolinen, Blöcken, Ventilatoren, Schaltern und Türen deine eigene Murmelmaschine.","Hier gibt es keinen vorgeschriebenen Aufbau. Baue, starte und verändere deine Maschine.","Jeder Versuch ist eine neue Idee.",110,60,850,520,20,20,Collections.emptyList(),Collections.emptyList());
+    public static final Level SANDBOX=new Level(-1,"Freier Bauplatz","Baue mit Brettern, Trampolinen, Blöcken, Ventilatoren, Schaltern und Türen deine eigene Murmelmaschine.","Hier gibt es keinen vorgeschriebenen Aufbau. Baue, starte und verändere deine Maschine.","Jeder Versuch ist eine neue Idee.",110,60,850,520,60,60,Collections.emptyList(),Collections.emptyList());
     public static Level get(int id) { return id<0?SANDBOX:LEVELS.get(Math.min(id,LEVELS.size()-1)); }
 }

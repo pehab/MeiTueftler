@@ -2,11 +2,11 @@
 
 Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Kugelbahnen, Fahrzeuge, Motoren, Räder, Holzrampen und eigene Ideen.
 
-**Version 0.7.0 · versionCode 11 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
+**Version 0.7.1 · versionCode 12 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
 
 ## Zwei Werkstätten ab 0.6.0
 
-Das vorgeschaltete Menü öffnet **Kugelbahnen** oder **Fahrzeuge**. Die Kugelbahnen enthalten die bisherigen 24 Aufgaben, den freien Bauplatz und die bestehende Galerie.
+Das Hauptmenü zeigt zwei bebilderte Werkstattkarten: eine Holz-Murmelbahn für **Kugelbahnen** und eine selbstgebaute Maschine für **Fahrzeuge**. Auf breiten Bildschirmen stehen sie nebeneinander, auf schmalen untereinander; die ganze Karte öffnet die Kategorie. Die Kugelbahnen enthalten die bisherigen 24 Aufgaben, den freien Bauplatz und die bestehende Galerie.
 
 Beide Werkstätten simulieren bis zu zwei Minuten. Im freien Modus beendet Stillstand den Versuch nicht vorzeitig; **Weiterbauen** beendet ihn jederzeit. Zielerfolg und Verlassen der Baufläche beenden den Versuch weiterhin.
 
@@ -74,7 +74,7 @@ Die konkrete Einrichtung und der lokale Release-Ablauf stehen in [docs/RELEASE.m
 
 Die direkt installierbare APK liegt unter **[Releases](https://github.com/pehab/MeiTueftler/releases)**. Jeder erfolgreiche Build auf `main` veröffentlicht automatisch ein Testrelease mit APK. Die Veröffentlichung wartet auf Tests, Lint, Build und Emulator-Smoke-Test.
 
-Tags haben das Format `v0.7.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
+Tags haben das Format `v0.7.1-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
 
 **Wechsel von den ersten Testbuilds:** Deren Signaturen wechselten ungewollt zwischen CI-Läufen. Bei einem Signaturwechsel muss die bisherige Test-App deinstalliert werden; dadurch wird der lokale Fortschritt gelöscht. Die neuen Speicherformate lesen weiterhin alte Bauwerke, wenn die App-Daten erhalten bleiben. Nach einmaliger Einrichtung des festen Schlüssels bleiben zukünftige Signaturen gleich. APK-Updates benötigen außerdem einen höheren `versionCode`.
 

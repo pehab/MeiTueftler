@@ -126,17 +126,39 @@ public final class MainActivity extends ComponentActivity {
         if(screen.equals("game")) showWorkshop(); else if(screen.equals("levels")) showLevels();else if(screen.equals("inventions"))showInventions();else if(screen.equals("marbles"))showMarbleMenu();else if(screen.equals("vehicles"))vehicles.showMenu(root);else if(screen.equals("vehicle_levels"))vehicles.showLevels(root);else if(screen.equals("vehicle_game"))vehicles.showEditor(root);else if(screen.equals("vehicle_inventions"))vehicles.showInventions(root);else showMenu();
     }
     private void showMenu() {
-        root.addView(text("BAUEN · TESTEN · STAUNEN",12,true));
+        TextView motto=text("DEINE IDEENWERKSTATT",12,true);motto.setTextColor(TEAL);root.addView(motto);
         root.addView(text("MeiTüftler",36,true));
-        root.addView(text("Welche Erfindung baust du heute?",18,false));
-        root.addView(new WorkshopView(this,this,true),new LinearLayout.LayoutParams(-1,0,1));
-        LinearLayout choices=row();
-        Button marbles=button("1 · Kugelbahnen\nRampen, Murmeln und verrückte Wege",true,()->navigate("marbles"));
-        Button machines=button("2 · Fahrzeuge\nMotor, Räder und deine Maschine",true,()->navigate("vehicles"));
-        LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(100),1);a.setMargins(dp(3),dp(6),dp(3),dp(6));choices.addView(marbles,a);
-        LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(100),1);b.setMargins(dp(3),dp(6),dp(3),dp(6));choices.addView(machines,b);root.addView(choices);
+        root.addView(text("Was tüftelst du heute?",18,false));
+        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);
+        LinearLayout choices=column();boolean wide=getResources().getConfiguration().screenWidthDp>=540;
+        choices.setOrientation(wide?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);choices.setGravity(Gravity.CENTER);
+        Button marbles=categoryCard("1 · Kugelbahnen\nLass die Murmel rollen!",false,()->navigate("marbles"));
+        Button machines=categoryCard("2 · Fahrzeuge\nBring deine Maschine in Fahrt!",true,()->navigate("vehicles"));
+        for(Button card:new Button[]{marbles,machines}) {
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(wide?0:-1,-2,wide?1:0);
+            lp.setMargins(dp(5),dp(8),dp(5),dp(8));choices.addView(card,lp);
+        }
+        scroll.addView(choices);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
         root.addView(button("Für Eltern · Info",false,this::parentGate),new LinearLayout.LayoutParams(-1,dp(48)));
         root.addView(text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.",14,false));
+    }
+    private Button categoryCard(String title,boolean vehicle,Runnable action) {
+        Button card=button(title,false,action);card.setTextSize(19);card.setTextColor(vehicle?ORANGE:TEAL);
+        card.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));card.setGravity(Gravity.CENTER);
+        card.setPadding(dp(14),dp(10),dp(14),dp(14));card.setCompoundDrawablePadding(dp(6));
+        GradientDrawable bg=new GradientDrawable();bg.setColor(vehicle?0xFFFFEADC:0xFFE0F1EA);
+        bg.setCornerRadius(dp(22));bg.setStroke(dp(2),vehicle?0xFFE9C7AB:0xFFB4D6CB);
+        card.setBackground(new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(0x22000000),bg,null));
+        card.setElevation(dp(2));
+        MenuArtwork art=new MenuArtwork(vehicle);art.setBounds(0,0,dp(300),dp(150));card.setCompoundDrawables(null,art,null,null);
+        card.addOnLayoutChangeListener((v,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{
+            int width=Math.max(1,right-left-card.getPaddingLeft()-card.getPaddingRight());
+            int height=Math.min(dp(230),Math.round(width*0.5f));
+            if(art.getBounds().width()!=width||art.getBounds().height()!=height) {
+                art.setBounds(0,0,width,height);card.setCompoundDrawables(null,art,null,null);
+            }
+        });
+        return card;
     }
     private void showMarbleMenu() {
         root.addView(button("‹ Kategorien",false,this::goBack),new LinearLayout.LayoutParams(-1,dp(48)));

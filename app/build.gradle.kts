@@ -12,8 +12,8 @@ android {
         applicationId = "de.haberland.meitueftler"
         minSdk = 26
         targetSdk = 37
-        versionCode = 10
-        versionName = "0.6.2"
+        versionCode = 11
+        versionName = "0.7.0"
         buildConfigField("boolean", "FIREBASE_CONFIGURED", firebaseConfigured.toString())
     }
     buildFeatures { buildConfig = true }

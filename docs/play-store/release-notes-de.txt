@@ -1,11 +1,7 @@
-Neu in MeiTüftler 0.6.2:
-• Aktualisierte Android-Bibliothek für die Play-Store-Veröffentlichung
-• Wähle zwischen Kugelbahnen und Fahrzeugen
-• Baue eigene Maschinen aus Motor, Rahmen, Rädern und Gewichten
-• Berührende Teile verbinden sich automatisch
-• Sechs Fahrzeug-Aufgaben: Hügel, Bodenwellen, Tunnel und Kletterrampe
-• Schwerpunkt, Gewicht und Motorstärke beeinflussen die Fahrt
-• Freie Bauplätze mit jeweils bis zu 60 Bauteilen
-• Bis zu zwei Minuten Simulation für Kugelbahnen und Fahrzeuge
-• Freie Fahrzeugwerkstatt mit eigener Galerie
-• Bisherige Kugelbahnen und Spielstände bleiben erhalten
+Neu in MeiTüftler 0.7.0:
+• Gelenke verbinden zwei Fahrzeug-Baugruppen beweglich
+• Drehantriebe mit einstellbarem Tempo und Drehsinn
+• Gummifüße für eigene Laufmaschinen ohne Räder
+• Fünf neue Aufgaben: Anhänger, Graben, Treppe und Laufmaschinen
+• Bauteil-Hilfe und klare Hinweise bei falsch gesetzten Gelenken
+• Bestehende Fahrzeuge und Kugelbahnen bleiben erhalten

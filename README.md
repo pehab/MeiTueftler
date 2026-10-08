@@ -2,7 +2,7 @@
 
 Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Kugelbahnen, Fahrzeuge, Motoren, Räder, Holzrampen und eigene Ideen.
 
-**Version 0.6.2 · versionCode 10 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
+**Version 0.7.0 · versionCode 11 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
 
 ## Zwei Werkstätten ab 0.6.0
 
@@ -12,17 +12,20 @@ Beide Werkstätten simulieren bis zu zwei Minuten. Im freien Modus beendet Still
 
 ### Fahrzeuge
 
-- Sechs frei wählbare Aufgaben: erste Räder, Hügel, Buckelpiste, niedriger Tunnel, Berg und steile Kletterrampe. Dazu ein freier Bauplatz und eine eigene Galerie für bis zu 20 Fahrzeuge.
+- Elf frei wählbare Aufgaben: erste Räder, Hügel, Buckelpiste, Tunnel und Berg sowie beweglicher Anhänger, Graben, Treppe, Laufmaschine und Geländepiste. Dazu ein freier Bauplatz und eine eigene Galerie für bis zu 20 Fahrzeuge.
 - Ein Motor ist vorgegeben. Er lässt sich nur innerhalb des sichtbaren Startfelds verschieben; das ganze Motorsymbol bleibt darin. Für den Erfolg muss der Motor selbst die Zielzone erreichen.
-- Bis zu 60 Teile im freien Modus und 24 Teile in Aufgaben, einschließlich Motor: frei platzierbare, rundherum drehbare Rahmen, Räder mit veränderlichem Radius und schwere Gewichte. Es gibt kein Bauraster und keine vorgefertigte Autoform.
+- Bis zu 60 Teile im freien Modus und 24 Teile in Aufgaben, einschließlich Motor: frei platzierbare, rundherum drehbare Rahmen, Räder mit veränderlichem Radius schwere Gewichte, Gelenke, Drehantriebe und Greiffüße. Es gibt kein Bauraster und keine vorgefertigte Autoform.
 - Berührende Teile verbinden sich beim Ausprobieren zu festen Baugruppen. Räder besitzen einen vereinfachten drehbaren Antrieb an ihrer Befestigung. Nur am Motor angeschlossene Räder bekommen Kraft; lose Baugruppen fallen und kollidieren separat.
 - Türkise Umrisse zeigen am Motor angeschlossene Teile; gestrichelte braune Umrisse markieren lose Teile. Das Kreuz zeigt den gemeinsamen Schwerpunkt. Rahmenteile, Räder und Gewichte tragen unterschiedliche Massen bei.
 - **Motor** wechselt zwischen sanft, mittel und kräftig; **Fahrt** wechselt zwischen rechts und links. Die Maschine fährt nach **Ausprobieren** automatisch. **Weiterbauen** stellt den gespeicherten Aufbau wieder her.
 - Gewicht, Schwerpunkt, Drehträgheit, Schwerkraft, begrenzte Motorkraft und Reifenreibung wirken auf die Konstruktion. Einseitige schwere Aufbauten kippen; überladene Maschinen können am Hang stehen bleiben. Große Räder und ungewöhnliche Rad-Anordnungen sind erlaubt.
-- Drei Sterne: Ziel erreicht, höchstens sechs Teile einschließlich Motor, ohne Hinweis. Hinweise zeigen geprüfte Beispielkonstruktionen.
+- **Gelenk** ersetzt die starre Berührung zweier Baugruppen durch einen frei drehbaren Drehpunkt. Es muss an genau zwei getrennten Baugruppen sitzen; zusätzliche starre Verbindungen können es überbrücken. Orange Gelenke sind unvollständig oder mehrdeutig und verhindern den Start mit einer Erklärung.
+- **Drehantrieb** ist ein vom Motor versorgtes Gelenk. Nach Antippen stellen **Drehen** und **Drehsinn** dessen Tempo und Richtung ein. Die Kraft ist begrenzt; mehrere Drehantriebe teilen sie sich. Auch über passive Gelenke verbundene Räder erhalten Motorkraft. Lose Antriebe bleiben passiv.
+- **Greiffuß** ist ein schwerer Gummifuß mit viel Reibung, ohne eigenen Antrieb. Zusammen mit drehenden Rahmen lassen sich Laufmaschinen ohne Räder bauen. **Bauteil-Hilfe** erklärt die neuen Bauteile.
+- Drei Sterne: Ziel erreicht, mit wenigen Teilen gelöst, ohne Hinweis. Die angezeigte Teilegrenze berücksichtigt den Umfang der Aufgabe (z. B. zehn Teile für die Laufmaschine). Hinweise zeigen geprüfte Beispielkonstruktionen.
 - Eigene Speicherplätze für Fahrzeug-Aufbauten, Sterne und benannte Maschinen. Bestehende Murmel-Spielstände und Erfindungen bleiben erhalten.
 
-Die Fahrzeugphysik ist ein vereinfachter Baukasten, keine technische Statikberechnung. Verbindungen bleiben starr und brechen nicht. Reifen können über Reibung an Steigungen klettern; frei bewegliche Gelenke, angetriebene Beine oder Haftmechanismen für senkrechte Wände sind noch nicht enthalten.
+Die Fahrzeugphysik ist ein vereinfachter Baukasten, keine technische Statikberechnung. Starre Verbindungen und Gelenke brechen nicht. Drehgelenke verbinden getrennte starre Baugruppen; Greiffüße und drehende Rahmen erlauben einfache Laufmaschinen. Reifen und Füße wirken über Kontaktreibung. Haftmechanismen für senkrechte Wände und echte Federung sind noch nicht enthalten.
 
 ## Kugelbahnen spielen
 
@@ -71,7 +74,7 @@ Die konkrete Einrichtung und der lokale Release-Ablauf stehen in [docs/RELEASE.m
 
 Die direkt installierbare APK liegt unter **[Releases](https://github.com/pehab/MeiTueftler/releases)**. Jeder erfolgreiche Build auf `main` veröffentlicht automatisch ein Testrelease mit APK. Die Veröffentlichung wartet auf Tests, Lint, Build und Emulator-Smoke-Test.
 
-Tags haben das Format `v0.6.2-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
+Tags haben das Format `v0.7.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
 
 **Wechsel von den ersten Testbuilds:** Deren Signaturen wechselten ungewollt zwischen CI-Läufen. Bei einem Signaturwechsel muss die bisherige Test-App deinstalliert werden; dadurch wird der lokale Fortschritt gelöscht. Die neuen Speicherformate lesen weiterhin alte Bauwerke, wenn die App-Daten erhalten bleiben. Nach einmaliger Einrichtung des festen Schlüssels bleiben zukünftige Signaturen gleich. APK-Updates benötigen außerdem einen höheren `versionCode`.
 
@@ -88,7 +91,7 @@ bash gradlew testDebugUnitTest lintDebug assembleDebug
 - `game/vehicle/`: Android-unabhängige Fahrzeugteile, Kontaktgraph, Aufgaben und reproduzierbare 240-Hz-Physik mit Masse, Trägheit und Reifenantrieb.
 - `VehicleWorkshop` / `VehicleView`: Fahrzeug-Navigation, eigene Speicherung, Werkzeugleiste und freie Canvas-Platzierung.
 - `WorkshopView`: skalierbare Canvas-Grafik und Drag-Gesten; die Bildschirmauflösung verändert die Physik nicht.
-- Fahrzeugtests prüfen alle Aufgaben und kleine Platzierungsabweichungen, freie Verbindungen, Motorbegrenzung, lose Räder, Schwerpunkt, Kippen, Überladung, Richtungswechsel und reproduzierbare Simulation.
+- Fahrzeugtests prüfen Gelenkanker, Kraftübertragung, passive lose Antriebe, Drehsinn, Laufmaschinen ohne Räder, ungültige Gelenke, Speicherkompatibilität und alle Aufgaben und kleine Platzierungsabweichungen, freie Verbindungen, Motorbegrenzung, lose Räder, Schwerpunkt, Kippen, Überladung, Richtungswechsel und reproduzierbare Simulation.
 - Unit-Tests prüfen insbesondere alle 24 Referenzlösungen, Federrückstoß, dicke Blöcke und gerichteten Wind, schnelle Kollisionen, Wiederholbarkeit und Baurücksetzung.
 - GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst eine Brett-, eine Trampolin- und eine Ventilator-Aufgabe und prüft die neue Werkzeugleiste, gespeicherte Bauteilarten, benannte Erfindungen samt Kopien und Änderungen nach einem Neustart, Rückgängig, Hochformat und die System-Zurück-Taste. Der Test baut zusätzlich ein Fahrzeug durch echte Drag-Gesten, prüft den Motorbereich, löst die erste Fahrzeug-Aufgabe, dreht die Ansicht und lädt eine gespeicherte Maschine nach Neustart. Screenshots dokumentieren beide Werkstätten, Aufgaben, Bauflächen und Erfolg.
 

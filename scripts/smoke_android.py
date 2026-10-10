@@ -80,7 +80,7 @@ def tap(prefix):
             for _ in range(3):
                 adb("shell","input","swipe",str((x1+x2)//2),str(y1+30),str((x1+x2)//2),str(y2-30),"250")
             root = tree()
-    for _ in range(7):
+    for _ in range(20):
         found = matching(root)
         if found:
             break
@@ -88,7 +88,11 @@ def tap(prefix):
         if not scrolls:
             break
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", scrolls[-1].get("bounds")))
-        adb("shell", "input", "swipe", str((x1+x2)//2), str(y2-30), str((x1+x2)//2), str(y1+30), "350")
+        # Overlapping slow steps keep list entries visible between snapshots.
+        # A full-height fling can jump over task 10 in the 20-task campaign.
+        height = y2-y1
+        adb("shell", "input", "swipe", str((x1+x2)//2), str(y1+height*3//4),
+            str((x1+x2)//2), str(y1+height//3), "650")
         root = tree()
     # Reuse the observed node instead of dumping the unchanged surface again.
     item = found[0] if found else node(prefix)

@@ -546,6 +546,15 @@ tap("‹ Fahrzeuge")
 tap("Meine Fahrzeuge")
 tap("Laufmaschine")
 node("10 / 10 Teile verbunden")
+# A saved invention runs in the sandbox: celebrate success without judging stars.
+tap("▶ Ausprobieren")
+node("Deine Maschine funktioniert!", timeout=30)
+texts = [item.get("text", "") for item in tree().iter("node")]
+assert not any("★" in text or "Extra-Sterne" in text for text in texts), texts
+screenshot("vehicle-sandbox-success")
+tap("Weiter tüfteln")
+sandbox_prefs = ET.fromstring(adb("shell", "run-as", PACKAGE, "cat", "shared_prefs/workshop.xml"))
+assert not any(item.get("name") in ("vehicle_stars_-1", "stars_-1") for item in sandbox_prefs)
 adb("shell", "input", "keyevent", "4")
 adb("shell", "input", "keyevent", "4")
 

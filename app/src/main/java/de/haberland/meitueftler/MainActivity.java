@@ -297,7 +297,7 @@ public final class MainActivity extends ComponentActivity {
         if(finishedHandled || engine==null || engine.state==PhysicsEngine.State.RUNNING || isFinishing())return;finishedHandled=true;updateControls();
         if(engine.state==PhysicsEngine.State.WON) {
             playTone(ToneGenerator.TONE_PROP_ACK,220);
-            int stars=1+(build.size()<=current.bonusRamps?1:0)+(!hintUsed?1:0);
+            int stars=current.sandbox()?0:1+(build.size()<=current.bonusRamps?1:0)+(!hintUsed?1:0);
             if(!current.sandbox())prefs.edit().putInt("stars_"+current.id,Math.max(stars,prefs.getInt("stars_"+current.id,0))).apply();
             AlertDialog.Builder dialog=new AlertDialog.Builder(this).setTitle(current.sandbox()?"Deine Maschine funktioniert!":"Geschafft!  "+symbols('★',stars))
                 .setMessage(current.discovery+(current.sandbox()?"":"\n\nExtra-Sterne: höchstens "+current.bonusRamps+" "+(current.bonusRamps==1?"Bauteil":"Bauteile")+" und ohne Hinweis lösen."))

@@ -1,4 +1,5 @@
 Neu in MeiTüftler 0.8.0:
 • Jetzt 20 Fahrzeug-Aufgaben: neun neue Herausforderungen mit hohen Stufen, Kletterturm, Schlucht, Engpässen und kombiniertem Gelände.
 • Geprüfte Hinweise für Radfahrzeuge und Laufmaschinen helfen beim Tüfteln.
+• Freies Bauen ohne Sternebewertung oder Extra-Sterne-Vorgaben.
 • Fortschritt und gespeicherte Erfindungen bleiben erhalten.

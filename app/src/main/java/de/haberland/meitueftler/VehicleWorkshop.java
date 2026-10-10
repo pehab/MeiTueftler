@@ -122,9 +122,10 @@ final class VehicleWorkshop {
         if(engine==null||engine.state==VehiclePhysics.State.RUNNING||handled||owner.isFinishing())return;handled=true;update();
         if(engine.state==VehiclePhysics.State.WON) {
             owner.playTone(ToneGenerator.TONE_PROP_ACK,220);
-            int stars=1+(build.size()<=level.bonusParts()?1:0)+(hintUsed?0:1);
+            int stars=level.sandbox()?0:1+(build.size()<=level.bonusParts()?1:0)+(hintUsed?0:1);
             if(!level.sandbox())prefs.edit().putInt("vehicle_stars_"+level.id,Math.max(stars,prefs.getInt("vehicle_stars_"+level.id,0))).apply();
-            AlertDialog.Builder dialog=new AlertDialog.Builder(owner).setTitle("Geschafft!  "+MainActivity.symbols('★',stars)).setMessage("Deine Konstruktion hat den Motor ins Ziel gebracht!\n\nExtra-Sterne: höchstens "+level.bonusParts()+" Teile einschließlich Motor und ohne Hinweis.")
+            AlertDialog.Builder dialog=new AlertDialog.Builder(owner).setTitle(level.sandbox()?"Deine Maschine funktioniert!":"Geschafft!  "+MainActivity.symbols('★',stars))
+                .setMessage("Deine Konstruktion hat den Motor ins Ziel gebracht!"+(level.sandbox()?"":"\n\nExtra-Sterne: höchstens "+level.bonusParts()+" Teile einschließlich Motor und ohne Hinweis."))
                 .setPositiveButton("Weiter tüfteln",(d,w)->toggle());
             if(!level.sandbox()&&level.id<VehicleCatalog.LEVELS.size()-1)dialog.setNegativeButton("Nächste Aufgabe",(d,w)->open(level.id+1));
             dialog.setOnCancelListener(d->{if(engine!=null)toggle();});dialog.show();

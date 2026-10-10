@@ -8,7 +8,7 @@ Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Kugelbahnen, Fahrz
 
 Das Hauptmenü zeigt zwei bebilderte Werkstattkarten: eine Holz-Murmelbahn für **Kugelbahnen** und eine selbstgebaute Maschine für **Fahrzeuge**. Auf breiten Bildschirmen stehen sie nebeneinander, auf schmalen untereinander; die ganze Karte öffnet die Kategorie. Die Kugelbahnen enthalten die bisherigen 24 Aufgaben, den freien Bauplatz und die bestehende Galerie.
 
-Beide Werkstätten simulieren bis zu zwei Minuten. Im freien Modus beendet Stillstand den Versuch nicht vorzeitig; **Weiterbauen** beendet ihn jederzeit. Zielerfolg und Verlassen der Baufläche beenden den Versuch weiterhin.
+Beide Werkstätten simulieren bis zu zwei Minuten. Im freien Bauen gibt es keine Sternebewertung und keine Extra-Sterne-Vorgaben für Teilezahl oder Hinweise. Im freien Modus beendet Stillstand den Versuch nicht vorzeitig; **Weiterbauen** beendet ihn jederzeit. Zielerfolg und Verlassen der Baufläche beenden den Versuch weiterhin.
 
 ### Fahrzeuge
 

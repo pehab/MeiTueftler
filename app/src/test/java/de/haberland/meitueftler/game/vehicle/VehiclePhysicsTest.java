@@ -10,6 +10,10 @@ import static org.junit.Assert.*;
 public final class VehiclePhysicsTest {
     private static List<VehiclePart> copy(List<VehiclePart> parts) { List<VehiclePart> result=new ArrayList<>();for(VehiclePart p:parts)result.add(p.copy());return result; }
     private static void finish(VehiclePhysics engine) { for(int i=0;i<240*121&&engine.state==VehiclePhysics.State.RUNNING;i++)engine.step(); }
+    @Test public void vehicleCampaignContainsTwentyConsecutiveLevels() {
+        assertEquals(20,VehicleCatalog.LEVELS.size());
+        for(int i=0;i<20;i++)assertEquals(i,VehicleCatalog.LEVELS.get(i).id);
+    }
     @Test public void allAuthoredTasksAndFreeBuildAreSolvable() {
         List<VehicleLevel> levels=new ArrayList<>(VehicleCatalog.LEVELS);levels.add(VehicleCatalog.SANDBOX);
         for(VehicleLevel l:levels) {

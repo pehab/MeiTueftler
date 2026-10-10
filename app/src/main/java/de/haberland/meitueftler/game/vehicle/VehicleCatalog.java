@@ -54,12 +54,6 @@ public final class VehicleCatalog {
         surfaces.add(new VehicleLevel.Surface(650,430,790,430,true));
         return surfaces;
     }
-    private static List<VehicleLevel.Surface> bottlenecks() {
-        List<VehicleLevel.Surface> surfaces=ground(10,540,990,540);
-        surfaces.add(new VehicleLevel.Surface(390,440,520,440,true));
-        surfaces.add(new VehicleLevel.Surface(650,445,780,445,true));
-        return surfaces;
-    }
     public static final List<VehicleLevel> LEVELS=java.util.Arrays.asList(
         level(0,"Die ersten Räder","Baue Räder und einen Rahmen um den Motor. Dein Motor muss die Zielflagge erreichen.","Ein waagerechter Rahmen und zwei Räder geben einen stabilen Anfang. Räder müssen den Rahmen berühren.",475,ground(10,540,990,540),car(32,180,445)),
         level(1,"Über den Hügel","Welche Maschine schafft es über den Hügel?","Ein tiefer Schwerpunkt und genügend Abstand zwischen den Rädern helfen am Hang.",475,ground(10,540,370,540,520,460,670,540,990,540),car(40,180,430)),

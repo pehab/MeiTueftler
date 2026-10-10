@@ -10,6 +10,10 @@ import static org.junit.Assert.*;
 public final class VehiclePhysicsTest {
     private static List<VehiclePart> copy(List<VehiclePart> parts) { List<VehiclePart> result=new ArrayList<>();for(VehiclePart p:parts)result.add(p.copy());return result; }
     private static void finish(VehiclePhysics engine) { for(int i=0;i<240*121&&engine.state==VehiclePhysics.State.RUNNING;i++)engine.step(); }
+    @Test public void vehicleCampaignContainsTwentyConsecutiveLevels() {
+        assertEquals(20,VehicleCatalog.LEVELS.size());
+        for(int i=0;i<20;i++)assertEquals(i,VehicleCatalog.LEVELS.get(i).id);
+    }
     @Test public void allAuthoredTasksAndFreeBuildAreSolvable() {
         List<VehicleLevel> levels=new ArrayList<>(VehicleCatalog.LEVELS);levels.add(VehicleCatalog.SANDBOX);
         for(VehicleLevel l:levels) {
@@ -21,6 +25,38 @@ public final class VehiclePhysicsTest {
             List<VehiclePart> build=copy(l.solution);
             for(int i=0;i<build.size();i++){VehiclePart p=build.get(i);p.x+=(i%2==0?1:-1)*(variant%2==0?2:-2);p.y+=(variant<2?2:-2);p.clamp(l);}
             VehiclePhysics e=new VehiclePhysics(l,build);finish(e);assertEquals(l.name+" variation "+variant,VehiclePhysics.State.WON,e.state);
+        }
+    }
+    @Test public void climbingTowerRequiresMoreThanTheIntroductoryCar() {
+        VehiclePhysics engine=new VehiclePhysics(VehicleCatalog.get(12),VehicleCatalog.LEVELS.get(0).solution);
+        finish(engine);assertEquals(VehiclePhysics.State.RETRY,engine.state);
+    }
+    @Test public void lowPassagesStopTheTallWalkingMachine() {
+        VehiclePhysics engine=new VehiclePhysics(VehicleCatalog.get(16),VehicleCatalog.walker());
+        finish(engine);assertEquals(VehiclePhysics.State.RETRY,engine.state);
+    }
+    @Test public void bottlenecksRejectTallBuildThatCanCrossTheOpenFloor() {
+        VehicleLevel narrow=VehicleCatalog.get(16);
+        assertEquals(2,narrow.surfaces.stream().filter(surface->surface.twoSided).count());
+        List<VehiclePart> tall=VehicleCatalog.car(48,160,400);
+        VehiclePhysics blocked=new VehiclePhysics(narrow,tall);finish(blocked);
+        assertEquals(VehiclePhysics.State.RETRY,blocked.state);
+        assertTrue(blocked.motorX()<650);
+        VehicleLevel open=new VehicleLevel(16,"Open floor","","",900,475,
+            VehicleCatalog.ground(10,540,990,540),tall);
+        VehiclePhysics clear=new VehiclePhysics(open,tall);finish(clear);
+        assertEquals(VehiclePhysics.State.WON,clear.state);
+    }
+    @Test public void campaignExtensionPreservesExistingBuildKeysAndUsesPlaceableHints() {
+        for(VehicleLevel level:VehicleCatalog.LEVELS) {
+            assertEquals("vehicle_build_"+level.id+"_v1",level.buildKey());
+            assertTrue(level.solution.size()<=level.maxParts());
+            for(VehiclePart original:level.solution) {
+                VehiclePart clamped=original.copy();clamped.clamp(level);
+                assertEquals(level.name,original.x,clamped.x,0);
+                assertEquals(level.name,original.y,clamped.y,0);
+                assertEquals(level.name,original.size,clamped.size,0);
+            }
         }
     }
     @Test public void connectionsFollowTouchingAndCrossingCapsulesWithoutGrid() {

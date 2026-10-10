@@ -80,7 +80,7 @@ def tap(prefix):
             for _ in range(3):
                 adb("shell","input","swipe",str((x1+x2)//2),str(y1+30),str((x1+x2)//2),str(y2-30),"250")
             root = tree()
-    for _ in range(7):
+    for _ in range(20):
         found = matching(root)
         if found:
             break
@@ -88,7 +88,11 @@ def tap(prefix):
         if not scrolls:
             break
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", scrolls[-1].get("bounds")))
-        adb("shell", "input", "swipe", str((x1+x2)//2), str(y2-30), str((x1+x2)//2), str(y1+30), "350")
+        # Overlapping slow steps keep list entries visible between snapshots.
+        # A full-height fling can jump over task 10 in the 20-task campaign.
+        height = y2-y1
+        adb("shell", "input", "swipe", str((x1+x2)//2), str(y1+height*3//4),
+            str((x1+x2)//2), str(y1+height//3), "650")
         root = tree()
     # Reuse the observed node instead of dumping the unchanged surface again.
     item = found[0] if found else node(prefix)
@@ -135,7 +139,7 @@ for size, label in (("390x844", "menu-phone"), ("844x390", "menu-phone-landscape
     node("MeiTüftler")
     screenshot(label)
     tap("2 · Fahrzeuge")
-    node("11 Fahrzeug-Aufgaben")
+    node("20 Fahrzeug-Aufgaben")
     adb("shell", "input", "keyevent", "4")
     node("MeiTüftler")
     tap("1 · Kugelbahnen")
@@ -409,7 +413,7 @@ node("MeiTüftler")
 tap("2 · Fahrzeuge")
 node("Fahrzeuge")
 screenshot("vehicle-menu")
-tap("11 Fahrzeug-Aufgaben")
+tap("20 Fahrzeug-Aufgaben")
 tap("1 · Die ersten Räder")
 board=node("Fahrzeug-Baufläche", "content-desc")
 screenshot("vehicle-empty")
@@ -521,7 +525,7 @@ tap("↶ Zurück")
 tap("↶ Zurück")
 node("10 / 10 Teile verbunden")
 tap("‹ Fahrzeuge")
-tap("11 Fahrzeug-Aufgaben")
+tap("20 Fahrzeug-Aufgaben")
 tap("10 · Die Laufmaschine")
 # Restore exactly the same saved articulated construction into the new task.
 adb("shell", "am", "force-stop", PACKAGE)
@@ -534,7 +538,7 @@ subprocess.run(["adb", "shell", "run-as", PACKAGE, "tee", "shared_prefs/workshop
                input=ET.tostring(vehicle_prefs), stdout=subprocess.DEVNULL, check=True)
 adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
 tap("2 · Fahrzeuge")
-tap("11 Fahrzeug-Aufgaben")
+tap("20 Fahrzeug-Aufgaben")
 tap("10 · Die Laufmaschine")
 node("10 / 10 Teile verbunden")
 screenshot("vehicle-walker-ready")
@@ -546,6 +550,15 @@ tap("‹ Fahrzeuge")
 tap("Meine Fahrzeuge")
 tap("Laufmaschine")
 node("10 / 10 Teile verbunden")
+# A saved invention runs in the sandbox: celebrate success without judging stars.
+tap("▶ Ausprobieren")
+node("Deine Maschine funktioniert!", timeout=30)
+texts = [item.get("text", "") for item in tree().iter("node")]
+assert not any("★" in text or "Extra-Sterne" in text for text in texts), texts
+screenshot("vehicle-sandbox-success")
+tap("Weiter tüfteln")
+sandbox_prefs = ET.fromstring(adb("shell", "run-as", PACKAGE, "cat", "shared_prefs/workshop.xml"))
+assert not any(item.get("name") in ("vehicle_stars_-1", "stars_-1") for item in sandbox_prefs)
 adb("shell", "input", "keyevent", "4")
 adb("shell", "input", "keyevent", "4")
 

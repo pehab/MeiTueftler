@@ -1,6 +1,6 @@
 # Firebase und lokaler Play-Store-Release
 
-Stand: 8. Oktober 2026. Version 0.7.1, versionCode 12, Paket de.haberland.meitueftler.
+Stand: 10. Oktober 2026. Version 0.8.0, versionCode 13, Paket de.haberland.meitueftler.
 
 ## Fragment-SDK-Warnung
 
@@ -28,7 +28,7 @@ GitHub baut und veröffentlicht weiterhin ausschließlich eine Debug-APK. Kein A
 2. Einen privaten Release-/Upload-Keystore nutzen, sicher außerhalb des Repositories verwahren und sichern. Nicht den GitHub-Testschlüssel verwenden; Passwörter nicht in Gradle oder Git speichern.
 3. Play App Signing in der Play Console einrichten und zunächst einen internen Test veröffentlichen. Jede spätere Version braucht einen höheren versionCode.
 4. Die GitHub-Test-APK ist mit einer Debugsignatur signiert. Der Wechsel zur Play-App kann wegen anderer App-Signatur eine Deinstallation erfordern und lokale Daten löschen. Keine nahtlose Migration versprechen. Vorher Maschinen ggf. auf dem Testgerät behalten; einen Export gibt es noch nicht.
-5. Release-Build lokal testen: Modusauswahl, freie Fahrzeugmontage, Motorbegrenzung, Fahren, Schwerpunkt, Gelenke, Drehantriebe, Greiffüße, ungültige Gelenke, die fünf neuen Aufgaben, Fahrzeuggalerie und gespeicherte Kugelbahnen sowie neue Hinderniswege, freie Schalter/Türen, Zuordnung, gespeicherte Erfindungen, Bildschirmwechsel und Elternzustimmung. Mit Firebase-Konfiguration auch einen Diagnosebericht aus einem Testbuild prüfen.
+5. Release-Build lokal testen: Modusauswahl, freie Fahrzeugmontage, Motorbegrenzung, Fahren, Schwerpunkt, Gelenke, Drehantriebe, Greiffüße, ungültige Gelenke, alle 20 Fahrzeugaufgaben, insbesondere die neun neuen Gelände- und Kletteraufgaben, Fahrzeuggalerie und gespeicherte Kugelbahnen sowie neue Hinderniswege, freie Schalter/Türen, Zuordnung, gespeicherte Erfindungen, Bildschirmwechsel und Elternzustimmung. Mit Firebase-Konfiguration auch einen Diagnosebericht aus einem Testbuild prüfen.
 
 ## Vor Veröffentlichung vervollständigen
 

@@ -27,6 +27,38 @@ public final class VehiclePhysicsTest {
             VehiclePhysics e=new VehiclePhysics(l,build);finish(e);assertEquals(l.name+" variation "+variant,VehiclePhysics.State.WON,e.state);
         }
     }
+    @Test public void climbingTowerRequiresMoreThanTheIntroductoryCar() {
+        VehiclePhysics engine=new VehiclePhysics(VehicleCatalog.get(12),VehicleCatalog.LEVELS.get(0).solution);
+        finish(engine);assertEquals(VehiclePhysics.State.RETRY,engine.state);
+    }
+    @Test public void lowPassagesStopTheTallWalkingMachine() {
+        VehiclePhysics engine=new VehiclePhysics(VehicleCatalog.get(16),VehicleCatalog.walker());
+        finish(engine);assertEquals(VehiclePhysics.State.RETRY,engine.state);
+    }
+    @Test public void bottlenecksRejectTallBuildThatCanCrossTheOpenFloor() {
+        VehicleLevel narrow=VehicleCatalog.get(16);
+        assertEquals(2,narrow.surfaces.stream().filter(surface->surface.twoSided).count());
+        List<VehiclePart> tall=VehicleCatalog.car(48,160,400);
+        VehiclePhysics blocked=new VehiclePhysics(narrow,tall);finish(blocked);
+        assertEquals(VehiclePhysics.State.RETRY,blocked.state);
+        assertTrue(blocked.motorX()<650);
+        VehicleLevel open=new VehicleLevel(16,"Open floor","","",900,475,
+            VehicleCatalog.ground(10,540,990,540),tall);
+        VehiclePhysics clear=new VehiclePhysics(open,tall);finish(clear);
+        assertEquals(VehiclePhysics.State.WON,clear.state);
+    }
+    @Test public void campaignExtensionPreservesExistingBuildKeysAndUsesPlaceableHints() {
+        for(VehicleLevel level:VehicleCatalog.LEVELS) {
+            assertEquals("vehicle_build_"+level.id+"_v1",level.buildKey());
+            assertTrue(level.solution.size()<=level.maxParts());
+            for(VehiclePart original:level.solution) {
+                VehiclePart clamped=original.copy();clamped.clamp(level);
+                assertEquals(level.name,original.x,clamped.x,0);
+                assertEquals(level.name,original.y,clamped.y,0);
+                assertEquals(level.name,original.size,clamped.size,0);
+            }
+        }
+    }
     @Test public void connectionsFollowTouchingAndCrossingCapsulesWithoutGrid() {
         VehiclePart motor=new VehiclePart(MOTOR,150.3,200.7,24,0);
         VehiclePart bar=new VehiclePart(FRAME,250.3,200.7,180,0);

@@ -48,6 +48,18 @@ public final class VehicleCatalog {
         List<VehicleLevel.Surface> surfaces=ground(10,540,990,540);
         surfaces.add(new VehicleLevel.Surface(460,440,740,440,true));return surfaces;
     }
+    private static List<VehicleLevel.Surface> narrowPassage() {
+        List<VehicleLevel.Surface> surfaces=ground(10,540,990,540);
+        surfaces.add(new VehicleLevel.Surface(420,440,550,440,true));
+        surfaces.add(new VehicleLevel.Surface(650,430,790,430,true));
+        return surfaces;
+    }
+    private static List<VehicleLevel.Surface> bottlenecks() {
+        List<VehicleLevel.Surface> surfaces=ground(10,540,990,540);
+        surfaces.add(new VehicleLevel.Surface(390,440,520,440,true));
+        surfaces.add(new VehicleLevel.Surface(650,445,780,445,true));
+        return surfaces;
+    }
     public static final List<VehicleLevel> LEVELS=java.util.Arrays.asList(
         level(0,"Die ersten Räder","Baue Räder und einen Rahmen um den Motor. Dein Motor muss die Zielflagge erreichen.","Ein waagerechter Rahmen und zwei Räder geben einen stabilen Anfang. Räder müssen den Rahmen berühren.",475,ground(10,540,990,540),car(32,180,445)),
         level(1,"Über den Hügel","Welche Maschine schafft es über den Hügel?","Ein tiefer Schwerpunkt und genügend Abstand zwischen den Rädern helfen am Hang.",475,ground(10,540,370,540,520,460,670,540,990,540),car(40,180,430)),
@@ -62,11 +74,11 @@ public final class VehicleCatalog {
         level(10,"Über Stock und Stein","Kurze Bodenwellen wechseln mit kleinen Plateaus. Baue bewegliche Beine oder ein eigenes Geländefahrzeug.","Beginne mit der Laufmaschine: kurze Beine, zwei Drehantriebe und vier Greiffüße. Ein kräftiger Motor hilft über die Kanten.",475,ground(10,540,400,540,450,525,500,540,560,530,620,530,670,540,740,520,800,540,990,540),walker()),
         level(11,"Die hohe Stufe","Erklimme eine deutlich höhere Stufe mit großen Rädern oder beweglichen Beinen.","Große Räder und kräftiger Antrieb helfen an der Kante. Eine Laufmaschine ist ebenfalls möglich.",390,ground(10,540,410,540,410,510,530,510,530,475,990,475),strongCar(48,160,400)),
         level(12,"Der Kletterturm","Steige über mehrere versetzte Vorsprünge zum erhöhten Ziel.","Nutze den Drehantrieb und Greiffüße für eine Maschine mit beweglichen Beinen.",340,ground(10,540,390,540,390,520,470,520,470,495,550,495,550,470,630,470,630,445,710,445,710,420,990,420),walker()),
-        level(13,"Die tiefe Schlucht","Überquere eine breite Senke, ohne mit dem Motor abzustürzen.","Ein langer Rahmen und mehrere Räder können die Last über die Kanten verteilen.",475,ground(10,540,420,540,420,585,560,585,560,540,990,540),bridgeCar()),
-        level(14,"Der Überhang","Erreiche das Ziel hinter einer vorspringenden Kante.","Bewegliche Beine mit Greiffüßen können helfen, den Aufbau über die Kante zu ziehen.",390,ground(10,540,420,540,420,515,560,515,560,480,990,480),walker()),
-        level(15,"Die Wippe","Halte die Balance über eine schmale erhöhte Passage.","Achte auf einen tiefen Schwerpunkt und einen ausreichend breiten Radstand.",475,ground(10,540,380,540,480,515,580,535,680,515,780,540,990,540),car(40,180,430)),
-        level(16,"Der Schacht","Finde einen Weg durch den engen Schacht zwischen zwei Hindernissen.","Ein kompakter Aufbau und bewegliche Gelenke sind hier wichtiger als reine Geschwindigkeit.",475,ground(10,540,990,540),car(24,160,460)),
-        level(17,"Die Himmelsbrücke","Kombiniere einen Aufstieg mit einer Lücke auf der oberen Ebene.","Ein Gelenk kann verhindern, dass eine lange Konstruktion an der Kante hängen bleibt.",390,ground(10,540,350,540,450,480,560,480,560,505,630,505,630,480,990,480),trailer()),
+        level(13,"Die tiefe Schlucht","Überquere eine breite Senke, ohne mit dem Motor abzustürzen.","Probiere zwei 48er Räder an einem 160 langen Rahmen mit kräftigem Motor. Der kurze Radstand lässt Platz zum Aufrichten in der Senke.",475,ground(10,540,420,540,420,585,560,585,560,540,990,540),strongCar(48,160,400)),
+        level(14,"Die Kletterkante","Ziehe deine Maschine über zwei hohe Kanten zum erhöhten Ziel.","Bewegliche Beine mit Greiffüßen können helfen, den Aufbau über die Kante zu ziehen.",390,ground(10,540,420,540,420,515,560,515,560,480,990,480),walker()),
+        level(15,"Der Balanceweg","Halte deine Maschine auf wechselnden Steigungen im Gleichgewicht.","Achte auf einen tiefen Schwerpunkt und einen ausreichend breiten Radstand.",475,ground(10,540,380,540,480,515,580,535,680,515,780,540,990,540),car(40,180,430)),
+        level(16,"Die Engpässe","Passe unter zwei unterschiedlich niedrigen Balken hindurch.","Zwei 24er Räder an einem 160 langen Rahmen ergeben einen flachen Wagen. Ein hoher Aufbau bleibt unter den Balken hängen.",485,narrowPassage(),car(24,160,460)),
+        level(17,"Die Himmelsbrücke","Kombiniere einen Aufstieg mit einer Lücke auf der oberen Ebene.","Probiere die Laufmaschine mit zwei 100 langen Beinen, vier Greiffüßen und kräftigem Motor. Die drehenden Beine helfen am Anstieg und an der Lückenkante.",390,ground(10,540,350,540,450,480,560,480,560,505,630,505,630,480,990,480),walker()),
         level(18,"Der Extremparcours","Meistere Treppen, Hügel und unebene Passagen in einer Fahrt.","Große Räder oder eine angetriebene Laufmaschine bieten unterschiedliche Lösungswege.",390,ground(10,540,340,540,410,510,470,510,470,490,550,490,610,470,690,490,760,465,990,465),walker()),
         level(19,"Meistertüftler","Baue deine eigene Maschine für die finale Kombination aus Steigung, Stufen und Senke.","Nutze die vorhandenen Bauteile kreativ: Rahmen, Räder, Gelenke, Drehantriebe und Greiffüße.",390,ground(10,540,310,540,410,510,470,510,470,490,550,490,610,515,680,515,740,465,990,465),walker())
     );

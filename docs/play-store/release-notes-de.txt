@@ -1,4 +1,4 @@
-Neu in MeiTüftler 0.7.1:
-• Kreatives Hauptmenü mit zwei bebilderten Werkstattkarten
-• Kugelbahnen und Fahrzeuge auf einen Blick erkennen
-• Angepasste Kartenanordnung für Handy und Tablet
+Neu in MeiTüftler 0.8.0:
+• Jetzt 20 Fahrzeug-Aufgaben: neun neue Herausforderungen mit hohen Stufen, Kletterturm, Schlucht, Engpässen und kombiniertem Gelände.
+• Geprüfte Hinweise für Radfahrzeuge und Laufmaschinen helfen beim Tüfteln.
+• Fortschritt und gespeicherte Erfindungen bleiben erhalten.

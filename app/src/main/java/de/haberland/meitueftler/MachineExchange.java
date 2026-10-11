@@ -82,7 +82,8 @@ final class MachineExchange {
                 Uri uri=FileProvider.getUriForFile(owner,BuildConfig.APPLICATION_ID+".machines",file,MachineFile.filename(name));
                 owner.runOnUiThread(()->{if(closed)return;busy=false;
                     Intent send=new Intent(Intent.ACTION_SEND).setType(MachineFile.MIME).putExtra(Intent.EXTRA_STREAM,uri).putExtra(Intent.EXTRA_SUBJECT,name)
-                        .setClipData(ClipData.newUri(owner.getContentResolver(),name,uri)).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    send.setClipData(ClipData.newUri(owner.getContentResolver(),name,uri));
                     try{owner.startActivity(Intent.createChooser(send,"Maschine teilen"));}catch(ActivityNotFoundException e){error("Keine App zum Teilen gefunden. Speichere die Maschine als Datei.");}
                 });
             }catch(IOException|IllegalArgumentException|SecurityException e){failed("Die Maschine konnte nicht geteilt werden.");}

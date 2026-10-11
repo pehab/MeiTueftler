@@ -12,6 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import de.haberland.meitueftler.game.Ramp;
+import de.haberland.meitueftler.game.SandboxLayout;
 import de.haberland.meitueftler.game.vehicle.VehiclePart;
 import de.haberland.meitueftler.game.mechanics.MechanicPart;
 import de.haberland.meitueftler.game.mechanics.MechanicCatalog;
@@ -35,12 +36,13 @@ public final class MachineFile {
     public final Category category;
     public final String name,build;
     public final int partCount;
-    private MachineFile(Category category,String name,JSONArray parts){this.category=category;this.name=name;build=parts.toString();partCount=parts.length();}
+    private MachineFile(Category category,String name,JSONArray parts,JSONObject layout)throws JSONException,FormatException{this.category=category;this.name=name;build=withLayout(category,parts,layout);partCount=parts.length();}
     public static String encode(Category category,String name,String build)throws FormatException {
         try {
             JSONObject file=new JSONObject();file.put("format",FORMAT);file.put("version",VERSION);file.put("workshopVersion",1);
             file.put("category",category.key);file.put("name",validName(name));
-            file.put("parts",validateParts(category,new JSONArray(build)));
+            file.put("parts",validateParts(category,SandboxLayout.parts(build)));
+            JSONObject layout=SandboxLayout.layout(build);if(layout!=null){String normalized=withLayout(category,SandboxLayout.parts(build),layout);file.put("layout",SandboxLayout.layout(normalized));file.put("workshopVersion",2);}
             return file.toString(2);
         }catch(JSONException|IllegalArgumentException e){throw new FormatException("Diese Maschine konnte nicht exportiert werden.");}
     }
@@ -52,11 +54,22 @@ public final class MachineFile {
             if(!(value instanceof JSONObject)||tokens.nextClean()!=0)throw new FormatException("Das ist keine gültige MeiTüftler-Maschinendatei.");
             JSONObject file=(JSONObject)value;
             if(!FORMAT.equals(file.opt("format")))throw new FormatException("Das ist keine MeiTüftler-Maschinendatei.");
-            if(integer(file,"version",1,Integer.MAX_VALUE)!=VERSION||integer(file,"workshopVersion",1,Integer.MAX_VALUE)!=1)throw new FormatException("Diese Dateiversion wird noch nicht unterstützt. Bitte MeiTüftler aktualisieren.");
+            if(integer(file,"version",1,Integer.MAX_VALUE)!=VERSION||integer(file,"workshopVersion",1,Integer.MAX_VALUE)>2)throw new FormatException("Diese Dateiversion wird noch nicht unterstützt. Bitte MeiTüftler aktualisieren.");
             Object category=file.opt("category"),name=file.opt("name"),parts=file.opt("parts");
             if(!(category instanceof String)||!(name instanceof String)||!(parts instanceof JSONArray))throw new FormatException("In der Datei fehlen Name, Werkstatt oder Bauteile.");
-            Category c=Category.parse((String)category);return new MachineFile(c,validName((String)name),validateParts(c,(JSONArray)parts));
+            if(file.has("layout")&&!(file.opt("layout") instanceof JSONObject))throw new FormatException("Die Levelpunkte sind ungültig.");
+            if(file.optInt("workshopVersion",1)==2&&!file.has("layout"))throw new FormatException("In der Datei fehlen die Levelpunkte.");
+            Category c=Category.parse((String)category);return new MachineFile(c,validName((String)name),validateParts(c,(JSONArray)parts),file.optJSONObject("layout"));
         }catch(JSONException|IllegalArgumentException e){throw new FormatException("Die Datei enthält ungültige Bauteile oder ist beschädigt.");}
+    }
+    private static String withLayout(Category category,JSONArray parts,JSONObject layout)throws JSONException,FormatException {
+        if(layout==null)return parts.toString();
+        for(String key:new String[]{"sx","sy","gx","gy"})if(layout.has(key))number(layout,key,30,key.endsWith("x")?970:540);
+        String arrayKey=category==Category.VEHICLES?"surfaces":"mounts";
+        if(layout.has(arrayKey)){JSONArray points=layout.getJSONArray(arrayKey);if(category==Category.VEHICLES&&points.length()>40||category==Category.MECHANICS&&points.length()!=MechanicCatalog.SANDBOX.mountCount())throw new FormatException("Die Levelpunkte sind ungültig.");for(int i=0;i<points.length();i++){JSONArray point=points.getJSONArray(i);int size=category==Category.VEHICLES?5:2;if(point.length()!=size)throw new FormatException("Die Levelpunkte sind ungültig.");for(int j=0;j<size;j++){Object v=point.get(j);double n=v instanceof Number?((Number)v).doubleValue():Double.NaN;if(!Double.isFinite(n)||n<0||n>(j==4?1:j%2==0?1000:600))throw new FormatException("Die Levelpunkte sind ungültig.");}}}
+        JSONObject wrapped=new JSONObject();wrapped.put("parts",parts);wrapped.put("layout",layout);
+        String json=wrapped.toString();
+        return category==Category.MARBLES?SandboxLayout.pack(parts,SandboxLayout.marble(json)):category==Category.VEHICLES?SandboxLayout.pack(parts,SandboxLayout.vehicle(json)):SandboxLayout.pack(parts,SandboxLayout.mechanic(json));
     }
     public static MachineFile read(InputStream input)throws IOException,FormatException {
         ByteArrayOutputStream bytes=new ByteArrayOutputStream();byte[] buffer=new byte[4096];int count;

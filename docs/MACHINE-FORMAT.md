@@ -32,3 +32,13 @@ Nach der Vorschau und Bestätigung erhält die Maschine eine neue lokale UUID. G
 Android nutzt `ACTION_OPEN_DOCUMENT` / `ACTION_CREATE_DOCUMENT` für die vom Benutzer ausgewählte Datei. Die Teilauswahl erhält eine `content://`-URI über den eigenen FileProvider und eine zeitweilige Leseberechtigung. Nur `cache/machine-exports/` ist dafür freigegeben; Spielstände und Diagnose-Dateien sind nicht zugänglich. Dateizugriffe laufen außerhalb des UI-Threads. Kein zusätzlicher Speicherzugriff und kein Server sind erforderlich.
 
 Referenzen: [Android-Dateiauswahl](https://developer.android.com/training/data-storage/shared/documents-files), [FileProvider](https://developer.android.com/reference/androidx/core/content/FileProvider).
+
+Ab 0.11.0 enthält ein freier Aufbau optional `layout` und verwendet `workshopVersion: 2` (das Dateischema bleibt `version: 1`). Alte Dateien mit `workshopVersion: 1` werden weiterhin geladen. Lokal werden neue freie Aufbauten als `{ "parts": [...], "layout": {...} }` gespeichert; alte Bauteilarrays bleiben lesbar.
+
+| Werkstatt | Layoutfelder |
+| --- | --- |
+| Kugelbahnen | `sx`, `sy` (Start), `gx`, `gy` (Korb) |
+| Fahrzeuge | `gx`, `gy`, `surfaces`: bis zu 40 Arrays `[ax, ay, bx, by, twoSided]`; Motorposition bleibt im Motorbauteil |
+| Mechanik | `sx`, `sy` (Kiste), `gx`, `gy`, `mounts`: Arrays `[x, y]` in der bisherigen Schraubpunktreihenfolge |
+
+Layoutkoordinaten sind endliche Zahlen innerhalb der Werkbank; der Editor begrenzt Marker zusätzlich auf den sichtbaren Innenbereich. Die Anzahl der Mechanik-Schraubpunkte bleibt unverändert, sodass gespeicherte Seilführungsindizes gültig bleiben. Unbekannte Layoutfelder werden nicht gespeichert.

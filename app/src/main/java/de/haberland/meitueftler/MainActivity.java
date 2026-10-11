@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import de.haberland.meitueftler.game.*;
 import org.json.JSONArray;
+import de.haberland.meitueftler.game.SandboxLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayDeque;
@@ -251,6 +252,7 @@ public final class MainActivity extends ComponentActivity {
         body.addView(board,landscape?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));
         ScrollView scroll=new ScrollView(this);LinearLayout tools=column();tools.setPadding(dp(10),dp(4),dp(4),dp(4));
         TextView task=text(current.task,15,false);task.setPadding(0,0,0,dp(8));tools.addView(task);
+        if(current.sandbox())board.layoutEditor.addTools(tools);
         selectionText=text("Tippe ein Bauteil an.",13,true);selectionText.setTextColor(TEAL);tools.addView(selectionText);
         toolRow(tools,editButton("＋ Brett",()->addElement(Ramp.Kind.PLANK)),editButton("↶ Zurück",this::undo));
         toolRow(tools,editButton("＋ Trampolin",()->addElement(Ramp.Kind.TRAMPOLINE)),editButton("＋ Block",()->addElement(Ramp.Kind.BLOCK)));
@@ -345,11 +347,11 @@ public final class MainActivity extends ComponentActivity {
     private String encodeBuild() {
         JSONArray array=new JSONArray();
         for(Ramp r:build)try { JSONObject o=new JSONObject();o.put("x",r.x);o.put("y",r.y);o.put("length",r.length);o.put("angle",r.angle);o.put("kind",r.kind.name());o.put("power",r.power);o.put("channel",r.channel);array.put(o); }catch(JSONException ignored){}
-        return array.toString();
+        return SandboxLayout.pack(array,current);
     }
     private void decodeBuild(String json) {
-        build.clear();
-        try { JSONArray array=new JSONArray(json);for(int i=0;i<Math.min(array.length(),current.maxRamps);i++) {
+        build.clear();try{if(current.sandbox())current=SandboxLayout.marble(json);}catch(JSONException ignored){ }
+        try { JSONArray array=SandboxLayout.parts(json);for(int i=0;i<Math.min(array.length(),current.maxRamps);i++) {
             JSONObject o=array.getJSONObject(i);double x=o.getDouble("x"),y=o.getDouble("y"),length=o.getDouble("length"),angle=o.getDouble("angle");
             if(!Double.isFinite(x)||!Double.isFinite(y)||!Double.isFinite(length)||!Double.isFinite(angle))continue;
             Ramp.Kind kind=Ramp.Kind.PLANK;

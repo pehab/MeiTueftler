@@ -13,6 +13,7 @@ import java.util.List;
 
 /** A scalable free-placement workbench; physics always uses a 1000 × 600 world. */
 final class VehicleView extends View {
+    final SandboxEditor layoutEditor;
     private final MainActivity owner;
     private final VehicleWorkshop workshop;
     private final boolean preview;
@@ -30,7 +31,7 @@ final class VehicleView extends View {
     public VehicleView(Context context) { this(context,context instanceof MainActivity?(MainActivity)context:null,null,true); }
     VehicleView(MainActivity owner,VehicleWorkshop workshop,boolean preview) { this(owner,owner,workshop,preview); }
     private VehicleView(Context context,MainActivity owner,VehicleWorkshop workshop,boolean preview) {
-        super(context);this.owner=owner;this.workshop=workshop;this.preview=preview;
+        super(context);this.owner=owner;this.workshop=workshop;this.preview=preview;layoutEditor=preview?null:new SandboxEditor(owner,this,()->workshop.level,workshop::remember,workshop::changed,()->workshop.engine!=null,workshop,null);
         setContentDescription(preview?"Ein selbstgebautes Fahrzeug mit Motor, Holzrahmen und Rädern.":"Fahrzeug-Baufläche. Teile frei verschieben. Der Motor bleibt im markierten Startbereich.");
         setClickable(!preview);setFocusable(!preview);
     }
@@ -45,7 +46,7 @@ final class VehicleView extends View {
         fill(0xFF976244);c.drawRoundRect(0,0,1000,600,22,22,paint);fill(0xFFEED6AB);c.drawRoundRect(10,10,990,590,16,16,paint);c.clipRect(10,10,990,590);
         for(int y=60;y<590;y+=70) { fill(0x22956743);c.drawRect(10,y,990,y+2,paint); }
         for(int x=40;x<980;x+=40)for(int y=40;y<580;y+=40){fill(0x334F7767);c.drawCircle(x,y,1.5f,paint);}
-        if(!preview&&workshop.engine==null) {
+        if(!preview&&workshop.engine==null&&!level.sandbox()) {
             fill(0x18147D78);c.drawRoundRect((float)level.buildLeft,(float)level.buildTop,(float)level.buildRight,(float)level.buildBottom,10,10,paint);
             paint.setColor(MainActivity.TEAL);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(2);paint.setPathEffect(startDash);
             c.drawRoundRect((float)level.buildLeft,(float)level.buildTop,(float)level.buildRight,(float)level.buildBottom,10,10,paint);
@@ -75,6 +76,7 @@ final class VehicleView extends View {
             label(c,"Schwerpunkt",x+16,y-10,15,MainActivity.INK);
         }
         if(preview) { label(c,"DEINE IDEE BEKOMMT RÄDER",80,150,29,MainActivity.INK);label(c,"Bauen · Ausprobieren · Weiter tüfteln",80,195,20,MainActivity.TEAL); }
+        if(!preview)layoutEditor.draw(c);
         c.restore();
         if(!preview&&workshop.engine!=null&&workshop.engine.state==VehiclePhysics.State.RUNNING&&!owner.paused)postInvalidateOnAnimation();
     }
@@ -124,6 +126,7 @@ final class VehicleView extends View {
     @Override public boolean onTouchEvent(MotionEvent event) {
         if(preview||workshop.engine!=null||scale<=0)return false;
         double x=(event.getX()-ox)/scale,y=(event.getY()-oy)/scale;
+        if(layoutEditor.touch(event,x,y,owner.dp(24)/scale))return true;
         switch(event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 if(x<0||x>1000||y<0||y>600)return false;dragging=false;remembered=false;workshop.selected=-1;

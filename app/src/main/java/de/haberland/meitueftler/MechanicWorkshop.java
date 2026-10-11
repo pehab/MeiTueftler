@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import org.json.JSONArray;
+import de.haberland.meitueftler.game.SandboxLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,7 +75,8 @@ final class MechanicWorkshop {
         LinearLayout body=new LinearLayout(owner);body.setOrientation(landscape?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);
         board=new MechanicView(owner,this,false);body.addView(board,landscape?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));
         ScrollView scroll=new ScrollView(owner);LinearLayout tools=owner.column();tools.setPadding(owner.dp(8),owner.dp(4),owner.dp(4),0);
-        tools.addView(owner.text(level.task,15,false));selection=owner.text("",13,true);selection.setTextColor(MainActivity.TEAL);tools.addView(selection);
+        tools.addView(owner.text(level.task,15,false));
+        if(level.sandbox())board.layoutEditor.addTools(tools);selection=owner.text("",13,true);selection.setTextColor(MainActivity.TEAL);tools.addView(selection);
         pair(tools,edit("＋ Balken",()->add(MechanicPart.Kind.BEAM)),edit("＋ Gewicht",()->add(MechanicPart.Kind.WEIGHT)));
         pair(tools,edit("＋ Seil",()->add(MechanicPart.Kind.ROPE)),edit("＋ Seilwinde",()->add(MechanicPart.Kind.WINCH)));
         pair(tools,edit("＋ Umlenkrolle",()->add(MechanicPart.Kind.PULLEY)),edit("Bauteil-Hilfe",this::help));
@@ -144,16 +146,16 @@ final class MechanicWorkshop {
         direction.setText(p!=null&&p.kind==MechanicPart.Kind.WINCH&&p.direction<0?"Seil: abrollen":"Seil: einziehen");
         guide.setText(p!=null&&p.kind==MechanicPart.Kind.ROPE&&p.guide>=0?"Umlenkung: Rolle "+(p.guide+1):"Umlenkung: direkt");
         run.setText(editable?"▶ Ausprobieren":"↶ Weiterbauen");
-        status.setText(hintVisible?level.hint:engine!=null?engine.state==MechanicPhysics.State.RUNNING?"Beobachte Hebelarm, Last und Seilspannung.":engine.message:"Schraubpunkte sind fest. Balken drehen dort; Gewichte und Seile bewegen die Kiste. Bauteil-Hilfe erklärt den Aufbau.");
+        status.setText(hintVisible?level.hint:engine!=null?engine.state==MechanicPhysics.State.RUNNING?"Beobachte Hebelarm, Last und Seilspannung.":engine.message:level.sandbox()?"Level bearbeiten verschiebt Kiste, Ziel und Schraubpunkte. Balken drehen an den Punkten; Gewichte und Seile bewegen die Kiste.":"Schraubpunkte sind fest. Balken drehen dort; Gewichte und Seile bewegen die Kiste. Bauteil-Hilfe erklärt den Aufbau.");
     }
     void resume(){if(board!=null)board.resumeDrawing();}
     void leave(){save();engine=null;selected=-1;}
     void save(){if(loaded)prefs.edit().putString(level.buildKey(),encode()).apply();}
     private String encode() {
-        JSONArray result=new JSONArray();for(MechanicPart p:build)try{JSONObject o=new JSONObject();o.put("kind",p.kind.name());o.put("x",p.x);o.put("y",p.y);o.put("bx",p.bx);o.put("by",p.by);o.put("size",p.size);o.put("angle",p.angle);o.put("power",p.power);o.put("direction",p.direction);o.put("guide",p.guide);result.put(o);}catch(JSONException ignored){ }return result.toString();
+        JSONArray result=new JSONArray();for(MechanicPart p:build)try{JSONObject o=new JSONObject();o.put("kind",p.kind.name());o.put("x",p.x);o.put("y",p.y);o.put("bx",p.bx);o.put("by",p.by);o.put("size",p.size);o.put("angle",p.angle);o.put("power",p.power);o.put("direction",p.direction);o.put("guide",p.guide);result.put(o);}catch(JSONException ignored){ }return SandboxLayout.pack(result,level);
     }
     private void decode(String json) {
-        build.clear();try{JSONArray items=new JSONArray(json);for(int i=0;i<items.length()&&build.size()<level.maxParts();i++){JSONObject o=items.optJSONObject(i);if(o==null)continue;
+        build.clear();try{if(level.sandbox())level=SandboxLayout.mechanic(json);}catch(JSONException ignored){ }try{JSONArray items=SandboxLayout.parts(json);for(int i=0;i<items.length()&&build.size()<level.maxParts();i++){JSONObject o=items.optJSONObject(i);if(o==null)continue;
             try{MechanicPart p=new MechanicPart(MechanicPart.Kind.valueOf(o.optString("kind")),o.optDouble("x",500),o.optDouble("y",260),o.optDouble("size",8),o.optDouble("angle",0));
                 p.bx=o.optDouble("bx",620);p.by=o.optDouble("by",460);p.power=o.optInt("power",2);p.direction=o.optInt("direction",1);p.guide=Math.max(-1,o.optInt("guide",-1));p.clamp();build.add(p);
             }catch(IllegalArgumentException ignored){ }

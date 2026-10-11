@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import de.haberland.meitueftler.game.vehicle.*;
 import org.json.JSONArray;
+import de.haberland.meitueftler.game.SandboxLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayDeque;
@@ -72,7 +73,8 @@ final class VehicleWorkshop {
         LinearLayout body=new LinearLayout(owner);body.setOrientation(landscape?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);
         board=new VehicleView(owner,this,false);body.addView(board,landscape?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));
         ScrollView scroll=new ScrollView(owner);LinearLayout tools=owner.column();tools.setPadding(owner.dp(8),owner.dp(4),owner.dp(4),0);
-        tools.addView(owner.text(level.task,15,false));selection=owner.text("",13,true);selection.setTextColor(MainActivity.TEAL);tools.addView(selection);
+        tools.addView(owner.text(level.task,15,false));
+        if(level.sandbox())board.layoutEditor.addTools(tools);selection=owner.text("",13,true);selection.setTextColor(MainActivity.TEAL);tools.addView(selection);
         tools(tools,edit("＋ Rahmen",()->add(VehiclePart.Kind.FRAME)),edit("＋ Rad",()->add(VehiclePart.Kind.WHEEL)));
         tools(tools,edit("＋ Gelenk",()->add(VehiclePart.Kind.HINGE)),edit("＋ Drehantrieb",()->add(VehiclePart.Kind.DRIVE)));
         tools(tools,edit("＋ Gewicht",()->add(VehiclePart.Kind.WEIGHT)),edit("＋ Greiffuß",()->add(VehiclePart.Kind.FOOT)));
@@ -109,7 +111,7 @@ final class VehicleWorkshop {
     }
     private void cyclePower() { remember();VehiclePart m=driveTarget();m.power=m.power%3+1;changed(); }
     private void reverse() { remember();driveTarget().direction*=-1;changed(); }
-    private void remove() { if(selected<0)return;if(build.get(selected).kind==VehiclePart.Kind.MOTOR) { toast("Der Motor gehört zur Aufgabe. Du kannst ihn im Startbereich verschieben.");return; }remember();build.remove(selected);selected=-1;changed(); }
+    private void remove() { if(selected<0)return;if(build.get(selected).kind==VehiclePart.Kind.MOTOR) { toast(level.sandbox()?"Das Fahrzeug braucht einen Motor. Im freien Bauplatz kannst du ihn frei verschieben.":"Der Motor gehört zur Aufgabe. Du kannst ihn im Startbereich verschieben.");return; }remember();build.remove(selected);selected=-1;changed(); }
     private void undo() { if(history.isEmpty())return;decode(history.removeLast());selected=-1;changed(); }
     private void clear() {
         new AlertDialog.Builder(owner).setTitle("Neu bauen?").setMessage("Mit dem Motor und einer neuen Idee anfangen?").setNegativeButton("Behalten",null)
@@ -155,11 +157,11 @@ final class VehicleWorkshop {
     void save() { if(!build.isEmpty())prefs.edit().putString(level.buildKey(),encode()).apply(); }
     private String encode() {
         JSONArray result=new JSONArray();for(VehiclePart p:build)try { JSONObject item=new JSONObject();item.put("kind",p.kind.name());item.put("x",p.x);item.put("y",p.y);item.put("size",p.size);item.put("angle",p.angle);item.put("power",p.power);item.put("direction",p.direction);result.put(item); }catch(JSONException ignored){ }
-        return result.toString();
+        return SandboxLayout.pack(result,level);
     }
     private void decode(String json) {
-        build.clear();boolean hasMotor=false;
-        try { JSONArray array=new JSONArray(json);for(int i=0;i<array.length()&&build.size()<level.maxParts();i++) {
+        build.clear();try{if(level.sandbox())level=SandboxLayout.vehicle(json);}catch(JSONException ignored){ }boolean hasMotor=false;
+        try { JSONArray array=SandboxLayout.parts(json);for(int i=0;i<array.length()&&build.size()<level.maxParts();i++) {
             JSONObject item=array.optJSONObject(i);if(item==null)continue;
             try {
                 VehiclePart.Kind kind=VehiclePart.Kind.valueOf(item.optString("kind"));if(kind==VehiclePart.Kind.MOTOR&&hasMotor)continue;

@@ -18,6 +18,13 @@ public final class MechanicPhysicsTest {
             assertEquals(x,parts.get(0).x,0);assertEquals(y,parts.get(0).y,0);
         }
     }
+    @Test public void expandedTasksRequireAConstructionAndUseSeveralMechanisms() {
+        assertEquals(24,MechanicCatalog.LEVELS.size());
+        for(MechanicLevel l:MechanicCatalog.LEVELS){MechanicPhysics e=new MechanicPhysics(l,Collections.emptyList());finish(e);assertEquals(l.name,MechanicPhysics.State.RETRY,e.state);}
+        assertTrue(MechanicCatalog.get(10).solution().stream().noneMatch(p->p.kind==WINCH));
+        assertTrue(MechanicCatalog.get(13).solution().stream().anyMatch(p->p.kind==PULLEY));
+        assertEquals(2,MechanicCatalog.get(20).solution().stream().filter(p->p.kind==WINCH).count());
+    }
     @Test public void hintsTolerateSmallPlacementErrors() {
         for(MechanicLevel l:MechanicCatalog.LEVELS)for(int v=0;v<4;v++) {
             List<MechanicPart> parts=l.solution();

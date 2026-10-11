@@ -12,8 +12,8 @@ android {
         applicationId = "de.haberland.meitueftler"
         minSdk = 26
         targetSdk = 37
-        versionCode = 14
-        versionName = "0.9.0"
+        versionCode = 15
+        versionName = "0.10.0"
         buildConfigField("boolean", "FIREBASE_CONFIGURED", firebaseConfigured.toString())
     }
     buildFeatures { buildConfig = true }
@@ -46,6 +46,8 @@ dependencies {
         }
     }
     testImplementation("junit:junit:4.13.2")
+    // Real JSON implementation for portable file tests; Android supplies org.json at runtime.
+    testImplementation("org.json:json:20260814")
 }
 
 // Fail CI when Java APIs or compiler diagnostics regress.

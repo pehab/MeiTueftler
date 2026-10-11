@@ -1,6 +1,8 @@
 package de.haberland.meitueftler;
 
 import androidx.activity.ComponentActivity;
+import android.content.Intent;
+import de.haberland.meitueftler.exchange.MachineFile.Category;
 import androidx.activity.OnBackPressedCallback;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
@@ -54,12 +56,15 @@ public final class MainActivity extends ComponentActivity {
     private LinearLayout root;
     private VehicleWorkshop vehicles;
     private MechanicWorkshop mechanics;
+    MachineExchange exchange;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         prefs=getSharedPreferences("workshop",MODE_PRIVATE);
         vehicles=new VehicleWorkshop(this,prefs);
         mechanics=new MechanicWorkshop(this,prefs);
+        exchange=new MachineExchange(this,prefs);
+        if(state!=null)exchange.restoreSession(state);
         updates=new PlayUpdates(this,this::saveBuild);
         sound=prefs.getBoolean("sound",true);
         Diagnostics.start(this,prefs.getBoolean("diagnostics",false));
@@ -79,18 +84,21 @@ public final class MainActivity extends ComponentActivity {
         if(state!=null&&state.getString("screen", "").startsWith("vehicle")) { screen=state.getString("screen");vehicles.restore(state.getInt("vehicleLevel",-1));vehicles.restoreSession(state); }
         if(state!=null&&state.getString("screen", "").startsWith("mechanic")){screen=state.getString("screen");mechanics.restore(state.getInt("mechanicLevel",-1));mechanics.restoreSession(state);}
         rebuildScreen();
+        if(state==null)exchange.incoming(getIntent());else exchange.restorePreview();
     }
+    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);exchange.incoming(intent);}
     @Override public void onConfigurationChanged(Configuration config) { super.onConfigurationChanged(config);rebuildScreen(); }
     @Override protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putString("screen",screen);
+        exchange.saveSession(out);
         if(screen.startsWith("vehicle")){vehicles.save();out.putInt("vehicleLevel",vehicles.level.id);vehicles.saveSession(out);}
         if(screen.startsWith("mechanic")){mechanics.save();out.putInt("mechanicLevel",mechanics.level.id);mechanics.saveSession(out);}
         if(current!=null && screen.equals("game")) { out.putInt("level",current.id);out.putInt("layoutRevision",current.layoutRevision);out.putString("build",encodeBuild());out.putBoolean("hintUsed",hintUsed);out.putString("inventionId",inventionId); }
     }
     @Override protected void onPause() { paused=true;saveBuild();super.onPause(); }
     @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing();if(vehicles!=null)vehicles.resume();if(mechanics!=null)mechanics.resume();if(updates!=null)updates.resume(); }
-    @Override protected void onDestroy() { if(tones!=null) tones.release();if(updates!=null)updates.close();super.onDestroy(); }
+    @Override protected void onDestroy() { if(tones!=null) tones.release();if(updates!=null)updates.close();if(exchange!=null)exchange.close();super.onDestroy(); }
     void goBack() {
         if(screen.equals("menu")) { finish();return; }
         saveBuild();engine=null;current=null;
@@ -367,13 +375,15 @@ public final class MainActivity extends ComponentActivity {
         if(saved.length()==0)list.addView(text("Hier ist Platz für deine erste Erfindung!",18,true));
         for(int i=0;i<saved.length();i++) {
             JSONObject item=saved.optJSONObject(i);if(item==null)continue;
-            LinearLayout line=row();Button load=button(item.optString("name","Meine Maschine"),false,()->loadInvention(item));
+            LinearLayout entry=column();LinearLayout line=row();Button load=button(item.optString("name","Meine Maschine"),false,()->loadInvention(item));
             line.addView(load,new LinearLayout.LayoutParams(0,dp(64),1));
             Button remove=button("Löschen",false,()->deleteInvention(item.optString("id"),item.optString("name")));
             LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(96),dp(52));lp.setMargins(dp(8),0,0,0);line.addView(remove,lp);
-            LinearLayout.LayoutParams lineLp=new LinearLayout.LayoutParams(-1,dp(76));list.addView(line,lineLp);
+            entry.addView(line);entry.addView(button("Exportieren",false,()->exchange.export(Category.MARBLES,item)),new LinearLayout.LayoutParams(-1,dp(48)));
+            LinearLayout.LayoutParams lineLp=new LinearLayout.LayoutParams(-1,-2);lineLp.setMargins(0,0,0,dp(8));list.addView(entry,lineLp);
         }
         scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+        exchange.addImport(root);
         root.addView(button("Zum freien Bauplatz",true,()->openLevel(-1)),new LinearLayout.LayoutParams(-1,dp(56)));
     }
     private void loadInvention(JSONObject item) {

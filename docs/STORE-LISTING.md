@@ -16,6 +16,8 @@ In Maschinen & Mechanik warten sechs neue Aufgaben mit Hebeln, Gewichten, Seilen
 
 Im freien Bauplatz experimentierst du mit bis zu 60 Bauteilen für Kugelbahnen, Fahrzeuge oder Mechanik. Hier gibt es keine Sternebewertung. Speichere deine Maschinen unter einem eigenen Namen, baue weiter oder lege eine Kopie für die nächste Idee an.
 
+Teile deine Maschinen als Datei mit anderen und importiere ihre Ideen in deine Galerie. Kugelbahnen, Fahrzeuge und Hebemaschinen können so von Gerät zu Gerät weitergegeben und weitergebaut werden.
+
 • Kein Zeitdruck, keine Leben und keine gesperrten Aufgaben
 • Hinweise und Rückgängig helfen beim Experimentieren
 • Warme Holzwerkstatt mit bewegten Propellern und kleinen Animationen

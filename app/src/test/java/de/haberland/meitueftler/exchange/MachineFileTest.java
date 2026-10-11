@@ -19,7 +19,18 @@ public final class MachineFileTest {
         for(int i=0;i<3;i++){
             String encoded=MachineFile.encode(categories[i],"Peters Tüftler 🚗",builds[i]);MachineFile imported=MachineFile.decode(encoded);
             assertEquals(categories[i],imported.category);assertEquals("Peters Tüftler 🚗",imported.name);assertEquals(2,imported.partCount);
-            assertTrue(new JSONArray(builds[i]).similar(new JSONArray(imported.build)));
+            JSONArray expected=new JSONArray(builds[i]),actual=new JSONArray(imported.build);
+            assertEquals(expected.length(),actual.length());
+            for(int part=0;part<expected.length();part++){
+                JSONObject before=expected.getJSONObject(part),after=actual.getJSONObject(part);
+                assertEquals(before.length(),after.length());
+                java.util.Iterator<String> keys=before.keys();
+                while(keys.hasNext()){
+                    String key=keys.next();Object value=before.get(key);
+                    if(value instanceof Number)assertEquals(key,((Number)value).doubleValue(),after.getDouble(key),0);
+                    else assertEquals(key,value,after.get(key));
+                }
+            }
             assertEquals(imported.build,MachineFile.read(new ByteArrayInputStream(encoded.getBytes(StandardCharsets.UTF_8))).build);
         }
     }

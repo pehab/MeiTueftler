@@ -138,7 +138,7 @@ final class MechanicWorkshop {
     void update() {
         if(selection==null)return;boolean editable=engine==null;for(Button b:editing){b.setEnabled(editable);b.setAlpha(editable?1:0.45f);}hint.setEnabled(editable);hint.setText(hintVisible?"Hinweis aus":"Hinweis");
         MechanicPart p=selectedPart();String detail=p==null?"":p.label()+" · "+(p.kind==MechanicPart.Kind.BEAM?(int)p.angle+"° · Länge "+(int)p.size:p.kind==MechanicPart.Kind.WEIGHT?"Masse "+(int)p.size:p.kind==MechanicPart.Kind.ROPE?"Zugabe "+(int)p.size+" · beide Enden verschieben":"am Befestigungspunkt platzieren")+"\n";
-        selection.setText(detail+"Bauteile: "+build.size()+" / "+level.maxParts()+" · Kistenmasse "+(int)level.cargoMass);
+        selection.setText(owner.getString(R.string.mechanics_selection,detail,build.size(),level.maxParts(),(int)level.cargoMass));
         power.setText(p!=null&&p.kind==MechanicPart.Kind.WINCH?(p.power==1?"Winde: sanft":p.power==3?"Winde: kräftig":"Winde: mittel"):"Windeneinstellung");
         direction.setText(p!=null&&p.kind==MechanicPart.Kind.WINCH&&p.direction<0?"Seil: abrollen":"Seil: einziehen");
         guide.setText(p!=null&&p.kind==MechanicPart.Kind.ROPE&&p.guide>=0?"Umlenkung: Rolle "+(p.guide+1):"Umlenkung: direkt");

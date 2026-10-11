@@ -13,6 +13,7 @@ import java.util.List;
 
 /** Fixed screw points, movable parts and two individually draggable rope ends. */
 final class MechanicView extends View {
+    final SandboxEditor layoutEditor;
     private final MainActivity owner;
     private final MechanicWorkshop workshop;
     private final boolean preview;
@@ -29,7 +30,7 @@ final class MechanicView extends View {
     public MechanicView(Context context) { this(context,context instanceof MainActivity?(MainActivity)context:null,null,true); }
     MechanicView(MainActivity owner,MechanicWorkshop workshop,boolean preview) { this(owner,owner,workshop,preview); }
     private MechanicView(Context context,MainActivity owner,MechanicWorkshop workshop,boolean preview) {
-        super(context);this.owner=owner;this.workshop=workshop;this.preview=preview;
+        super(context);this.owner=owner;this.workshop=workshop;this.preview=preview;layoutEditor=preview?null:new SandboxEditor(owner,this,()->workshop.level,workshop::remember,workshop::changed,()->workshop.engine!=null,null,workshop);
         setContentDescription(preview?"Ein Holzhebel hebt eine Kiste mit einem Gegengewicht.":"Mechanik-Baufläche. Balken und Gewichte frei verschieben. Beide Seilenden einzeln ziehen. Die Kiste und Schraubpunkte sind fest vorgegeben.");
         setClickable(!preview);setFocusable(!preview);
     }
@@ -66,6 +67,7 @@ final class MechanicView extends View {
         }
         if(!preview&&workshop.hintVisible)for(MechanicPart p:l.solution())drawPart(c,p,l,false,true);
         if(preview){label(c,"HEBEN · ZIEHEN · BEWEGEN",70,120,30,MainActivity.INK);label(c,"Was bewirken Hebelarm und Gewicht?",70,164,21,MainActivity.TEAL);}
+        if(!preview)layoutEditor.draw(c);
         c.restore();if(!preview&&workshop.engine!=null&&workshop.engine.state==MechanicPhysics.State.RUNNING&&!owner.paused)postInvalidateOnAnimation();
     }
     private void drawPart(Canvas c,MechanicPart p,MechanicLevel l,boolean selected,boolean ghost) {
@@ -104,6 +106,7 @@ final class MechanicView extends View {
     @Override public boolean onTouchEvent(MotionEvent event) {
         if(preview||workshop.engine!=null||scale<=0)return false;
         double x=(event.getX()-ox)/scale,y=(event.getY()-oy)/scale;
+        if(layoutEditor.touch(event,x,y,owner.dp(24)/scale))return true;
         switch(event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 if(x<0||x>1000||y<0||y>600)return false;dragging=false;remembered=false;workshop.selected=-1;handle=0;

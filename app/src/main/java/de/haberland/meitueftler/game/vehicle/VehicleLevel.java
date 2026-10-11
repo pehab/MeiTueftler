@@ -6,12 +6,12 @@ public final class VehicleLevel {
     public static final int MAX_PARTS=24, SANDBOX_MAX_PARTS=60;
     public final int id;
     public final String name,task,hint;
-    public final double goalX,goalY;
+    public double goalX,goalY;
     public final double buildLeft=35,buildRight=320,buildTop=90,buildBottom=495;
     public final List<Surface> surfaces;
     public final List<VehiclePart> solution;
     public VehicleLevel(int id,String name,String task,String hint,double goalX,double goalY,List<Surface> surfaces,List<VehiclePart> solution) {
-        this.id=id;this.name=name;this.task=task;this.hint=hint;this.goalX=goalX;this.goalY=goalY;this.surfaces=java.util.Collections.unmodifiableList(new java.util.ArrayList<>(surfaces));this.solution=java.util.Collections.unmodifiableList(new java.util.ArrayList<>(solution));
+        this.id=id;this.name=name;this.task=task;this.hint=hint;this.goalX=goalX;this.goalY=goalY;this.surfaces=id<0?new java.util.ArrayList<>(surfaces):java.util.Collections.unmodifiableList(new java.util.ArrayList<>(surfaces));this.solution=java.util.Collections.unmodifiableList(new java.util.ArrayList<>(solution));
     }
     public boolean sandbox() { return id<0; }
     public int bonusParts() { return Math.max(6,solution.size()); }

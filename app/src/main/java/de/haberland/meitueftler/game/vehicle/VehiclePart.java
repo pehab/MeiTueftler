@@ -35,7 +35,7 @@ public final class VehiclePart {
         double a=Math.toRadians(angle),mx=Math.abs(Math.cos(a))*halfLength()+radius(),my=Math.abs(Math.sin(a))*halfLength()+radius();
         x=Math.max(12+mx,Math.min(988-mx,x));y=Math.max(12+my,Math.min(578-my,y));
         power=Math.max(1,Math.min(3,power));direction=direction<0?-1:1;
-        if(kind==Kind.MOTOR) {
+        if(kind==Kind.MOTOR&&!level.sandbox()) {
             x=Math.max(level.buildLeft+radius(),Math.min(level.buildRight-radius(),x));
             y=Math.max(level.buildTop+radius(),Math.min(level.buildBottom-radius(),y));
         }

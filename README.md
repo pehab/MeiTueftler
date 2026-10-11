@@ -2,7 +2,7 @@
 
 Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Kugelbahnen, Fahrzeuge, Hebel, Seilzüge und eigene Ideen.
 
-**Version 0.10.0 · versionCode 15 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
+**Version 0.11.0 · versionCode 16 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
 
 ## Drei Werkstätten ab 0.9.0
 
@@ -29,7 +29,7 @@ Die Fahrzeugphysik ist ein vereinfachter Baukasten, keine technische Statikberec
 
 ### Maschinen & Mechanik
 
-- Sechs frei wählbare Aufgaben: erster Hebel, langer Hebelarm, Gegengewicht, Aufzug, Umlenkrolle und schwere Fracht. Die vorgegebene Kiste muss die markierte Zielzone erreichen.
+- 24 frei wählbare Aufgaben: Hebel, Winkelhebel, Pendelfähren, Fangseile, Gegengewichtsaufzüge, frei schwebende Fracht, diagonale Seilzüge, hängende Kräne, Seilwippen und kombinierte Hebemaschinen. Die vorgegebene Kiste muss die markierte Zielzone erreichen.
 - Balken und Gewichte verbinden sich bei Berührung zu festen Baugruppen. Ein Schraubpunkt durch einen Balken dient als Drehpunkt; zwei Punkte befestigen ihn starr. Hebelarm, Masse und Trägheit bestimmen die Bewegung.
 - Seilenden lassen sich einzeln an Kiste, Balken, Gewicht, Winde oder Befestigung anlegen. Seile übertragen nur Zugkraft. Eine fest montierte Umlenkrolle pro Seil ändert die Zugrichtung.
 - Seilwinden sitzen an festen Schraubpunkten. Stärke und Einziehen/Abrollen sind einstellbar; die Zugkraft ist begrenzt. Aufzugskisten laufen in einer senkrechten Führung.
@@ -91,7 +91,7 @@ Die konkrete Einrichtung und der lokale Release-Ablauf stehen in [docs/RELEASE.m
 
 Die direkt installierbare APK liegt unter **[Releases](https://github.com/pehab/MeiTueftler/releases)**. Jeder erfolgreiche Build auf `main` veröffentlicht automatisch ein Testrelease mit APK. Die Veröffentlichung wartet auf Tests, Lint, Build und Emulator-Smoke-Test.
 
-Tags haben das Format `v0.10.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
+Tags haben das Format `v0.11.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
 
 **Wechsel von den ersten Testbuilds:** Deren Signaturen wechselten ungewollt zwischen CI-Läufen. Bei einem Signaturwechsel muss die bisherige Test-App deinstalliert werden; dadurch wird der lokale Fortschritt gelöscht. Die neuen Speicherformate lesen weiterhin alte Bauwerke, wenn die App-Daten erhalten bleiben. Nach einmaliger Einrichtung des festen Schlüssels bleiben zukünftige Signaturen gleich. APK-Updates benötigen außerdem einen höheren `versionCode`.
 
@@ -119,3 +119,9 @@ Die App verwendet keine Konten, Werbung, In-App-Käufe, Google Analytics oder Fi
 ### Saubere Builds
 
 Java-Compiler- und Android-Lint-Warnungen sowie Gradle-Deprecations brechen den Build ab. Die CI-Actions sind auf Node.js 24 und feste Commit-Versionen gesetzt. Die stabile Kombination AGP 9.4.1 / Gradle 9.7.0 vermeidet den bekannten AGP-Aufruf von `Configuration.setVisible`, der ab Gradle 9.8 eine Warnung auslöst ([Upstream-Fehler](https://issuetracker.google.com/issues/560282299)). Ausschließlich der Lint-Hinweis zum Upgrade dieser Wrapper-Version ist deshalb in `app/lint.xml` ausgenommen. Die Ausnahme entfernen, sobald der Fix in einer stabilen AGP-Version verfügbar ist.
+
+## Freie Level bearbeiten (ab 0.11.0)
+
+In jeder freien Werkstatt schaltet **Level bearbeiten** von Bauteilen auf Levelpunkte um. Markierte Punkte antippen und ziehen, danach mit **Fertig · Bauteile bauen** zurückwechseln. Kugelbahnen erlauben Start und Korb, Mechanik erlaubt Kiste, Ziel und alle Schraubpunkte. Aufgesetzte Rollen und Winden folgen ihrem Schraubpunkt. Im freien Fahrzeugbau sind Motor und Ziel frei verschiebbar. Streckenenden können gezogen, über **＋ Strecke** bis zu 40 Abschnitte ergänzt und der am Endpunkt gewählte Abschnitt gelöscht werden. Gemeinsame Streckenenden lassen sich einzeln bearbeiten.
+
+Leveländerungen gehören zum Aufbau: Rückgängig, automatisches Speichern, Galerie, Drehung des Geräts und Export/Import behalten sie bei. Alte Aufbauten erhalten ihre bisherige Standardgeometrie. Aufgaben behalten die vorgegebenen Startbereiche, Ziele, Schraubpunkte und Strecken. Dateien mit angepassten Leveln benötigen auf beiden Geräten Version 0.11.0; ältere Apps weisen sie mit einem Updatehinweis ab.

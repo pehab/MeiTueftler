@@ -92,8 +92,9 @@ jobs:
           Spielbare Android-Testversion mit Kugelbahnen, Fahrzeugen und Maschinen & Mechanik.
 
           Die APK unten direkt auf dem Android-Gerät herunterladen und installieren.
-          Enthält drei Werkstätten, sechs neue Mechanik-Aufgaben mit Hebeln, Gewichten, Seilen, Winden und Umlenkrollen samt eigener Galerie, 20 Fahrzeug-Aufgaben mit Motoren, freien Rahmen, Rädern, Gelenken, Drehantrieben, Greiffüßen, Gewicht und Schwerpunkt, eine eigene Fahrzeug-Galerie und 24 Murmel-Rätsel, davon 18 überarbeitete Hinderniswege mit Tunneln, S-Kurven und hohen Galerien, Bretter, Trampoline, Blöcke, Ventilatoren, Schalter und Türen, freie Bauplätze mit jeweils bis zu 60 Bauteilen und bis zu zwei Minuten Simulation, benannte Erfindungen und eine warme Holzwerkstatt. Crashlytics ist eingerichtet und wird nach Zustimmung im Elternbereich aktiviert. Neues MeiApp-Icon. Fortschritt und Maschinen werden lokal gespeichert.
+          Enthält drei Werkstätten, 24 Mechanik-Aufgaben mit Hebeln, Gewichten, Seilen, Winden und Umlenkrollen samt eigener Galerie, 20 Fahrzeug-Aufgaben mit Motoren, freien Rahmen, Rädern, Gelenken, Drehantrieben, Greiffüßen, Gewicht und Schwerpunkt, eine eigene Fahrzeug-Galerie und 24 Murmel-Rätsel, davon 18 überarbeitete Hinderniswege mit Tunneln, S-Kurven und hohen Galerien, Bretter, Trampoline, Blöcke, Ventilatoren, Schalter und Türen, freie Bauplätze mit jeweils bis zu 60 Bauteilen und bis zu zwei Minuten Simulation, benannte Erfindungen und eine warme Holzwerkstatt. Crashlytics ist eingerichtet und wird nach Zustimmung im Elternbereich aktiviert. Neues MeiApp-Icon. Fortschritt und Maschinen werden lokal gespeichert.
           Neu: Maschinen aus allen drei Galerien als Datei exportieren, über Android teilen und in der passenden Werkstatt importieren. Bestehende Maschinen und Sterne werden nicht überschrieben.
+          Neu: Freie Level mit verschiebbaren Starts, Zielen und Schraubpunkten sowie editierbaren Fahrzeugstrecken. Eigene Geometrie wird gespeichert und geteilt. Mechanik erweitert um Pendel, Fangseile, Gegengewichtsaufzüge und kombinierte Hebemaschinen.
           Dies ist ein Debug-Testbuild; kein Play-Store-Release.
           Diese APK verwendet den festen privaten Test-Signaturschlüssel. Künftige Testversionen lassen sich als Updates installieren.
           Beim Wechsel von älteren Builds mit zufälligen Signaturen ist einmalig eine Neuinstallation nötig, die lokalen Fortschritt löscht.
@@ -131,7 +132,9 @@ jobs:
           profile: pixel_2
           ram-size: 3072M
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -no-metrics
-          script: python3 scripts/smoke_android.py
+          script: |
+            python3 scripts/smoke_android.py
+            python3 scripts/smoke_layout.py
       - name: Upload interface screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7, Node.js 24

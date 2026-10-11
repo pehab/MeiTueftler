@@ -10,6 +10,7 @@ import java.util.Deque;
 import java.util.List;
 
 final class WorkshopView extends View {
+    final SandboxEditor layoutEditor;
     private final MainActivity owner;
     private final boolean preview;
     private final Ramp previewTrampoline=new Ramp(680,385,160,-15,false,Ramp.Kind.TRAMPOLINE);
@@ -27,7 +28,7 @@ final class WorkshopView extends View {
     private int trailSteps;
     private long winWallTime;
     WorkshopView(Context context,MainActivity owner,boolean preview) {
-        super(context);this.owner=owner;this.preview=preview;
+        super(context);this.owner=owner;this.preview=preview;layoutEditor=preview?null:new SandboxEditor(owner,this,()->owner.current,owner::rememberBuild,owner::constructionChanged,()->owner.engine!=null,null,null);
         setContentDescription(preview?"Eine Murmel rollt auf einer Holzrampe zum Korb.":"Baufläche. Bauteile antippen und verschieben. Drehen und Größe über die Tasten daneben ändern.");
         setClickable(!preview);setFocusable(!preview);
     }
@@ -63,6 +64,7 @@ final class WorkshopView extends View {
         if(!preview&&owner.engine!=null&&owner.engine.state==PhysicsEngine.State.WON) {
             for(int i=0;i<16;i++) { fill(i%2==0?MainActivity.TEAL:MainActivity.ORANGE);float x=(float)level.goalX+(i%5-2)*22,y=(float)level.goalY-75-(i/5)*18;c.drawRoundRect(x,y,x+7,y+12,2,2,paint); }
         }
+        if(!preview)layoutEditor.draw(c);
         c.restore();
         if(!isPaused() && (preview || (!preview&&owner.engine==null&&hasFans())))postInvalidateOnAnimation();
         if(!preview&&owner.engine!=null&&!isPaused()&&(owner.engine.state==PhysicsEngine.State.RUNNING || (winWallTime!=0&&System.nanoTime()-winWallTime<1_200_000_000L)))postInvalidateOnAnimation();
@@ -254,6 +256,7 @@ final class WorkshopView extends View {
     @Override public boolean onTouchEvent(MotionEvent event) {
         if(preview||owner.engine!=null||scale<=0)return false;
         double x=(event.getX()-offsetX)/scale,y=(event.getY()-offsetY)/scale;
+        if(layoutEditor.touch(event,x,y,owner.dp(24)/scale))return true;
         switch(event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 if(x<0||x>1000||y<0||y>600)return false;

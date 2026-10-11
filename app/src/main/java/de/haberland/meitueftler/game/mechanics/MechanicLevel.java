@@ -7,7 +7,8 @@ import java.util.List;
 public final class MechanicLevel {
     public final int id;
     public final String name,task,hint;
-    public final double cargoX,cargoY,cargoMass,goalX,goalY;
+    public double cargoX,cargoY,goalX,goalY;
+    public final double cargoMass;
     public final boolean rail;
     private final double[] mounts;
     private final List<MechanicPart> solution;
@@ -26,6 +27,7 @@ public final class MechanicLevel {
     public int mountCount() { return mounts.length/2; }
     public double mountX(int i) { return mounts[2*i]; }
     public double mountY(int i) { return mounts[2*i+1]; }
+    public void moveMount(int i,double x,double y){if(sandbox()){mounts[2*i]=x;mounts[2*i+1]=y;}}
     public int nearMount(double x,double y) {
         int best=-1;double distance=24;
         for(int i=0;i<mountCount();i++){double d=Math.hypot(x-mountX(i),y-mountY(i));if(d<distance){best=i;distance=d;}}

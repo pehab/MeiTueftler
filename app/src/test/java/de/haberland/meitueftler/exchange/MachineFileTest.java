@@ -51,7 +51,7 @@ public final class MachineFileTest {
     }
     @Test public void otherFilesUnknownCategoriesAndNewerFormatsExplainWhyTheyFail()throws Exception {
         rejected("{}","keine MeiTüftler");JSONObject file=envelope();file.put("category","unknown");rejected(file.toString(),"Werkstatt");
-        file=envelope();file.put("version",2);rejected(file.toString(),"aktualisieren");file=envelope();file.put("workshopVersion",2);rejected(file.toString(),"aktualisieren");
+        file=envelope();file.put("version",2);rejected(file.toString(),"aktualisieren");file=envelope();file.put("workshopVersion",3);rejected(file.toString(),"aktualisieren");
         rejected(envelope()+" garbage","keine gültige");rejected("[","beschädigt");
     }
     @Test public void missingWronglyTypedAndUnknownPartsAreRejectedCompletely()throws Exception {

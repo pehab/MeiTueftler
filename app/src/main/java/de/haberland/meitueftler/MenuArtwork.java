@@ -7,11 +7,11 @@ import android.graphics.Picture;
 import android.graphics.Rect;
 import android.graphics.drawable.PictureDrawable;
 
-/** Resolution-independent little inventions for the two clickable workshop cards. */
+/** Resolution-independent little inventions for the three clickable workshop cards. */
 final class MenuArtwork extends PictureDrawable {
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    MenuArtwork(boolean vehicle) {
+    MenuArtwork(int category) {
         super(new Picture());
         Canvas c=getPicture().beginRecording(480,240);
         // A warm workbench, pencil sketches, and screws frame each different invention.
@@ -21,7 +21,7 @@ final class MenuArtwork extends PictureDrawable {
             stroke(0xFFDCCCAC,1);c.drawLine(16,y,464,y+3,paint);
         }
         bolt(c,23,23);bolt(c,457,23);bolt(c,23,217);bolt(c,457,217);
-        if(vehicle)drawVehicle(c);else drawMarbles(c);
+        if(category==2)drawMechanics(c);else if(category==1)drawVehicle(c);else drawMarbles(c);
         getPicture().endRecording();
     }
 
@@ -104,6 +104,21 @@ final class MenuArtwork extends PictureDrawable {
         stroke(0xFFC59562,2);c.drawLine(68,53,142,53,paint);
         c.drawLine(142,53,132,46,paint);c.drawLine(142,53,132,60,paint);
         pencil(c,66,216,3);
+    }
+
+    private void drawMechanics(Canvas c) {
+        // A fixed pivot, weight, raised crate and cable make the third workshop recognizable.
+        stroke(0xFF708B9D,6);c.drawLine(250,170,250,209,paint);c.drawLine(216,209,284,209,paint);
+        plank(c,97,183,392,115,20);bolt(c,250,148);
+        fill(0xFF708B9D);c.drawRoundRect(84,163,117,199,6,6,paint);
+        fill(0xFFFFFFFF);paint.setTextSize(21);c.drawText("8",94,188,paint);
+        fill(0xFFE4B54E);c.drawRoundRect(372,90,415,133,5,5,paint);
+        stroke(0xFF805F31,3);c.drawRect(377,95,410,128,paint);c.drawLine(377,95,410,128,paint);c.drawLine(410,95,377,128,paint);
+        stroke(0xFF805F31,3);c.drawLine(125,58,392,58,paint);c.drawLine(392,58,392,90,paint);
+        wheel(c,392,58,17);fill(MainActivity.TEAL);c.drawRoundRect(99,42,135,77,7,7,paint);
+        fill(0xFFFFFFFF);paint.setTextSize(20);c.drawText("M",108,66,paint);
+        stroke(0xFF6B4F92,3);c.drawLine(442,144,442,100,paint);c.drawLine(442,100,434,111,paint);c.drawLine(442,100,450,111,paint);
+        pencil(c,52,218,0);
     }
 
     private void plank(Canvas c,float x1,float y1,float x2,float y2,float thickness) {

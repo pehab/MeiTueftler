@@ -13,4 +13,5 @@
     <string name="vehicle_drive_fast">Drehen: schnell</string>
     <string name="vehicle_clockwise">Drehsinn: ↻</string>
     <string name="vehicle_counterclockwise">Drehsinn: ↺</string>
+    <string name="mechanics_selection">%1$sBauteile: %2$d / %3$d · Kistenmasse %4$d</string>
 </resources>

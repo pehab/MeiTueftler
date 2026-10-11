@@ -2,7 +2,7 @@
 
 Eine offline spielbare Android-Erfinderwerkstatt für Kinder: Kugelbahnen, Fahrzeuge, Hebel, Seilzüge und eigene Ideen.
 
-**Version 0.9.0 · versionCode 14 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
+**Version 0.10.0 · versionCode 15 · Android 8 oder neuer · Paket `de.haberland.meitueftler`**
 
 ## Drei Werkstätten ab 0.9.0
 
@@ -35,6 +35,14 @@ Die Fahrzeugphysik ist ein vereinfachter Baukasten, keine technische Statikberec
 - Seilwinden sitzen an festen Schraubpunkten. Stärke und Einziehen/Abrollen sind einstellbar; die Zugkraft ist begrenzt. Aufzugskisten laufen in einer senkrechten Führung.
 - Freie Mechanikwerkstatt mit bis zu 60 Bauteilen, Rückgängig, Bauteil-Hilfe, geprüften Hinweisen und eigener Galerie für bis zu 20 benannte Maschinen. Im freien Bauen gibt es keine Sterneprüfung; Aufgaben behalten ihre drei Sterne.
 - Die Mechanik ist ein vereinfachter Baukasten mit festen Drehpunkten und idealen Seilen. Bewegliche Flaschenzüge und frei platzierbare Gelenke sind hier noch nicht enthalten.
+
+## Maschinen weitergeben
+
+In jeder Galerie gibt es **Exportieren**: **Teilen** öffnet die Android-Teilauswahl, **Als Datei speichern** legt eine `.meitueftler.json`-Datei am gewählten Speicherort ab. Die Datei enthält Name, Werkstatt, Bauteile und deren Einstellungen, einschließlich Farbkanälen, Drehsinn und Seilführungen.
+
+**Maschine importieren** öffnet die Dateiauswahl. MeiTüftler erkennt die Werkstatt automatisch, zeigt Bauteilzahl und Name an und legt nach Bestätigung eine neue Maschine in der passenden Galerie an. Gleiche Namen bekommen einen Import-Zusatz. Bestehende Maschinen, freie Entwürfe und Sterne werden nicht überschrieben. Empfangene JSON-Dateien lassen sich auch mit MeiTüftler öffnen oder an MeiTüftler teilen.
+
+Beide Geräte benötigen MeiTüftler ab 0.10.0. Kein Konto oder Server nötig; Dateien können auch offline weitergegeben werden. Pro Datei sind höchstens 60 Bauteile und 128 KB erlaubt, pro Galerie weiterhin 20 Maschinen. Ungültige Bauteile, zu große Dateien und unbekannte Dateiversionen werden mit einer Erklärung abgewiesen. [Austauschformat](docs/MACHINE-FORMAT.md).
 
 ## Kugelbahnen spielen
 
@@ -83,7 +91,7 @@ Die konkrete Einrichtung und der lokale Release-Ablauf stehen in [docs/RELEASE.m
 
 Die direkt installierbare APK liegt unter **[Releases](https://github.com/pehab/MeiTueftler/releases)**. Jeder erfolgreiche Build auf `main` veröffentlicht automatisch ein Testrelease mit APK. Die Veröffentlichung wartet auf Tests, Lint, Build und Emulator-Smoke-Test.
 
-Tags haben das Format `v0.9.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
+Tags haben das Format `v0.10.0-build.N`. Testreleases sind als Vorabversion markiert und verwenden die Android-Debug-Signatur. Eine feste private Testsignatur kann über das GitHub-Actions-Secret `MEITUEFTLER_TEST_KEYSTORE_BASE64` bereitgestellt werden. Die CI dekodiert den Schlüssel nur in ihr temporäres Verzeichnis. Ein Keystore darf nicht in das öffentliche Repository gelangen. Veröffentlichte Builds auf `main` verlangen diesen festen Schlüssel; bei fehlendem Secret bricht die CI ab. Pull-Request-Builds ohne Secret können weiterhin mit einer temporären Debugsignatur geprüft werden.
 
 **Wechsel von den ersten Testbuilds:** Deren Signaturen wechselten ungewollt zwischen CI-Läufen. Bei einem Signaturwechsel muss die bisherige Test-App deinstalliert werden; dadurch wird der lokale Fortschritt gelöscht. Die neuen Speicherformate lesen weiterhin alte Bauwerke, wenn die App-Daten erhalten bleiben. Nach einmaliger Einrichtung des festen Schlüssels bleiben zukünftige Signaturen gleich. APK-Updates benötigen außerdem einen höheren `versionCode`.
 
@@ -103,7 +111,8 @@ bash gradlew testDebugUnitTest lintDebug assembleDebug
 - `game/mechanics/`, `MechanicWorkshop` und `MechanicView`: Hebel, Seile, Winden, Aufzüge, Mechanikaufgaben und eigene Speicherung. Modelltests prüfen alle Beispielaufbauten, Platzierungsabweichungen, Zugkraft, Drehsinn, fehlende Befestigungen und reproduzierbare Ergebnisse.
 - Fahrzeugtests prüfen Gelenkanker, Kraftübertragung, passive lose Antriebe, Drehsinn, Laufmaschinen ohne Räder, ungültige Gelenke, Speicherkompatibilität und alle Aufgaben und kleine Platzierungsabweichungen, freie Verbindungen, Motorbegrenzung, lose Räder, Schwerpunkt, Kippen, Überladung, Richtungswechsel und reproduzierbare Simulation.
 - Unit-Tests prüfen insbesondere alle 24 Referenzlösungen, Federrückstoß, dicke Blöcke und gerichteten Wind, schnelle Kollisionen, Wiederholbarkeit und Baurücksetzung.
-- GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst eine Brett-, eine Trampolin- und eine Ventilator-Aufgabe und prüft die neue Werkzeugleiste, gespeicherte Bauteilarten, benannte Erfindungen samt Kopien und Änderungen nach einem Neustart, Rückgängig, Hochformat und die System-Zurück-Taste. Der Test baut zusätzlich ein Fahrzeug durch echte Drag-Gesten, prüft den Motorbereich, löst die erste Fahrzeug-Aufgabe, dreht die Ansicht und lädt eine gespeicherte Maschine nach Neustart. Der Test baut außerdem einen Hebel, einen Aufzug und einen Seilzug mit Umlenkrolle per Touch und prüft Mechanik-Galerie, Neustart, Hochformat und freien Erfolg ohne Sterne. Screenshots dokumentieren alle drei Werkstätten, Aufgaben, Bauflächen und Erfolg.
+- `MachineExchange`, `MachineFileProvider` und `exchange/MachineFile`: Android-Dateiauswahl, Teilen und versioniertes Austauschformat. Elf Dateitests prüfen vollständige Rundläufe, Einstellungen, ältere Murmelaufbauten, ungültige Eingaben, Größenbegrenzung und Namenskonflikte.
+- GitHub Actions startet zusätzlich die APK auf einem Android-35-Emulator. Der Test bedient die App anhand ihres Accessibility-Baums, verschiebt ein Brett, löst eine Brett-, eine Trampolin- und eine Ventilator-Aufgabe und prüft die neue Werkzeugleiste, gespeicherte Bauteilarten, benannte Erfindungen samt Kopien und Änderungen nach einem Neustart, Rückgängig, Hochformat und die System-Zurück-Taste. Der Test baut zusätzlich ein Fahrzeug durch echte Drag-Gesten, prüft den Motorbereich, löst die erste Fahrzeug-Aufgabe, dreht die Ansicht und lädt eine gespeicherte Maschine nach Neustart. Der Test baut außerdem einen Hebel, einen Aufzug und einen Seilzug mit Umlenkrolle per Touch und prüft Mechanik-Galerie, Neustart, Hochformat und freien Erfolg ohne Sterne. Screenshots dokumentieren alle drei Werkstätten, Aufgaben, Bauflächen und Erfolg. Ein separater Emulatorlauf exportiert und importiert alle drei Werkstätten über die echte Android-Dateiauswahl, prüft die Teilauswahl, direkte Dateiöffnung, Abbruch, Neustart, identische Einstellungen, volle Galerien und fehlerhafte Dateien.
 
 Die App verwendet keine Konten, Werbung, In-App-Käufe, Google Analytics oder Firebase Analytics. Das Firebase-SDK bringt eine Netzberechtigung mit; Firebase wird erst bei eingerichteter Konfiguration und ausdrücklicher Zustimmung im Elternbereich gestartet. Spielen funktioniert offline. Die Grafiken werden direkt mit Canvas gezeichnet.
 

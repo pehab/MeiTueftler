@@ -1,6 +1,7 @@
 package de.haberland.meitueftler;
 
 import android.app.AlertDialog;
+import de.haberland.meitueftler.exchange.MachineFile.Category;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.ToneGenerator;
@@ -166,9 +167,9 @@ final class MechanicWorkshop {
         if(all.length()==0)list.addView(owner.text("Speichere deine erste Hebemaschine im freien Bauplatz.",17,false));
         for(int i=0;i<all.length();i++){JSONObject o=all.optJSONObject(i);if(o==null)continue;LinearLayout row=owner.row();
             owner.addEqual(row,owner.button(o.optString("name"),false,()->{open(-1);inventionId=o.optString("id");decode(o.optString("build","[]"));save();owner.navigate("mechanic_game");}));
-            row.addView(owner.button("Löschen",false,()->new AlertDialog.Builder(owner).setTitle("Maschine löschen?").setMessage(o.optString("name")).setNegativeButton("Behalten",null).setPositiveButton("Löschen",(d,w)->{JSONArray saved=inventions();for(int j=saved.length()-1;j>=0;j--){JSONObject item=saved.optJSONObject(j);if(item!=null&&item.optString("id").equals(o.optString("id")))saved.remove(j);}prefs.edit().putString("mechanics_inventions",saved.toString()).apply();owner.navigate("mechanic_inventions");}).show()));list.addView(row);
+            row.addView(owner.button("Löschen",false,()->new AlertDialog.Builder(owner).setTitle("Maschine löschen?").setMessage(o.optString("name")).setNegativeButton("Behalten",null).setPositiveButton("Löschen",(d,w)->{JSONArray saved=inventions();for(int j=saved.length()-1;j>=0;j--){JSONObject item=saved.optJSONObject(j);if(item!=null&&item.optString("id").equals(o.optString("id")))saved.remove(j);}prefs.edit().putString("mechanics_inventions",saved.toString()).apply();owner.navigate("mechanic_inventions");}).show()));LinearLayout entry=owner.column();entry.addView(row);entry.addView(owner.button("Exportieren",false,()->owner.exchange.export(Category.MECHANICS,o)),new LinearLayout.LayoutParams(-1,owner.dp(48)));list.addView(entry);
         }
-        scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));root.addView(owner.button("Freie Mechanikwerkstatt",true,()->open(-1)));
+        scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));owner.exchange.addImport(root);root.addView(owner.button("Freie Mechanikwerkstatt",true,()->open(-1)));
     }
     private void saveDialog() {
         if(engine!=null){toast("Tippe zuerst auf Weiterbauen.");return;}

@@ -1,6 +1,7 @@
 package de.haberland.meitueftler;
 
 import android.app.AlertDialog;
+import de.haberland.meitueftler.exchange.MachineFile.Category;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -179,9 +180,9 @@ final class VehicleWorkshop {
             JSONObject item=saved.optJSONObject(i);if(item==null)continue;LinearLayout row=owner.row();
             owner.addEqual(row,owner.button(item.optString("name"),false,()->{open(-1);inventionId=item.optString("id");decode(item.optString("build","[]"));save();owner.navigate("vehicle_game");}));
             row.addView(owner.button("Löschen",false,()->new AlertDialog.Builder(owner).setTitle("Fahrzeug löschen?").setMessage(item.optString("name")).setNegativeButton("Behalten",null).setPositiveButton("Löschen",(d,w)->{
-                JSONArray all=inventions();for(int j=all.length()-1;j>=0;j--){JSONObject p=all.optJSONObject(j);if(p!=null&&p.optString("id").equals(item.optString("id")))all.remove(j);}prefs.edit().putString("vehicle_inventions",all.toString()).apply();owner.navigate("vehicle_inventions");}).show()));list.addView(row);
+                JSONArray all=inventions();for(int j=all.length()-1;j>=0;j--){JSONObject p=all.optJSONObject(j);if(p!=null&&p.optString("id").equals(item.optString("id")))all.remove(j);}prefs.edit().putString("vehicle_inventions",all.toString()).apply();owner.navigate("vehicle_inventions");}).show()));LinearLayout entry=owner.column();entry.addView(row);entry.addView(owner.button("Exportieren",false,()->owner.exchange.export(Category.VEHICLES,item)),new LinearLayout.LayoutParams(-1,owner.dp(48)));list.addView(entry);
         }
-        scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));root.addView(owner.button("Freie Maschinenwerkstatt",true,()->open(-1)));
+        scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));owner.exchange.addImport(root);root.addView(owner.button("Freie Maschinenwerkstatt",true,()->open(-1)));
     }
     private void saveDialog() {
         if(engine!=null) { toast("Tippe zuerst auf Weiterbauen.");return; }

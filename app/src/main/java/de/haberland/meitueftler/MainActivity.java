@@ -53,11 +53,13 @@ public final class MainActivity extends ComponentActivity {
     private PlayUpdates updates;
     private LinearLayout root;
     private VehicleWorkshop vehicles;
+    private MechanicWorkshop mechanics;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         prefs=getSharedPreferences("workshop",MODE_PRIVATE);
         vehicles=new VehicleWorkshop(this,prefs);
+        mechanics=new MechanicWorkshop(this,prefs);
         updates=new PlayUpdates(this,this::saveBuild);
         sound=prefs.getBoolean("sound",true);
         Diagnostics.start(this,prefs.getBoolean("diagnostics",false));
@@ -75,6 +77,7 @@ public final class MainActivity extends ComponentActivity {
             screen="game";
         }
         if(state!=null&&state.getString("screen", "").startsWith("vehicle")) { screen=state.getString("screen");vehicles.restore(state.getInt("vehicleLevel",-1));vehicles.restoreSession(state); }
+        if(state!=null&&state.getString("screen", "").startsWith("mechanic")){screen=state.getString("screen");mechanics.restore(state.getInt("mechanicLevel",-1));mechanics.restoreSession(state);}
         rebuildScreen();
     }
     @Override public void onConfigurationChanged(Configuration config) { super.onConfigurationChanged(config);rebuildScreen(); }
@@ -82,15 +85,17 @@ public final class MainActivity extends ComponentActivity {
         super.onSaveInstanceState(out);
         out.putString("screen",screen);
         if(screen.startsWith("vehicle")){vehicles.save();out.putInt("vehicleLevel",vehicles.level.id);vehicles.saveSession(out);}
+        if(screen.startsWith("mechanic")){mechanics.save();out.putInt("mechanicLevel",mechanics.level.id);mechanics.saveSession(out);}
         if(current!=null && screen.equals("game")) { out.putInt("level",current.id);out.putInt("layoutRevision",current.layoutRevision);out.putString("build",encodeBuild());out.putBoolean("hintUsed",hintUsed);out.putString("inventionId",inventionId); }
     }
     @Override protected void onPause() { paused=true;saveBuild();super.onPause(); }
-    @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing();if(vehicles!=null)vehicles.resume();if(updates!=null)updates.resume(); }
+    @Override protected void onResume() { super.onResume();paused=false;if(board!=null)board.resumeDrawing();if(vehicles!=null)vehicles.resume();if(mechanics!=null)mechanics.resume();if(updates!=null)updates.resume(); }
     @Override protected void onDestroy() { if(tones!=null) tones.release();if(updates!=null)updates.close();super.onDestroy(); }
     void goBack() {
         if(screen.equals("menu")) { finish();return; }
         saveBuild();engine=null;current=null;
         if(screen.startsWith("vehicle")) { vehicles.leave();screen=screen.equals("vehicles")?"menu":"vehicles"; }
+        else if(screen.startsWith("mechanic")){mechanics.leave();screen=screen.equals("mechanics")?"menu":"mechanics";}
         else screen=screen.equals("marbles")?"menu":"marbles";
         rebuildScreen();
     }
@@ -123,18 +128,19 @@ public final class MainActivity extends ComponentActivity {
             return insets;
         });
         root.requestApplyInsets();
-        if(screen.equals("game")) showWorkshop(); else if(screen.equals("levels")) showLevels();else if(screen.equals("inventions"))showInventions();else if(screen.equals("marbles"))showMarbleMenu();else if(screen.equals("vehicles"))vehicles.showMenu(root);else if(screen.equals("vehicle_levels"))vehicles.showLevels(root);else if(screen.equals("vehicle_game"))vehicles.showEditor(root);else if(screen.equals("vehicle_inventions"))vehicles.showInventions(root);else showMenu();
+        if(screen.equals("game")) showWorkshop(); else if(screen.equals("levels")) showLevels();else if(screen.equals("inventions"))showInventions();else if(screen.equals("marbles"))showMarbleMenu();else if(screen.equals("vehicles"))vehicles.showMenu(root);else if(screen.equals("vehicle_levels"))vehicles.showLevels(root);else if(screen.equals("vehicle_game"))vehicles.showEditor(root);else if(screen.equals("vehicle_inventions"))vehicles.showInventions(root);else if(screen.equals("mechanics"))mechanics.showMenu(root);else if(screen.equals("mechanic_levels"))mechanics.showLevels(root);else if(screen.equals("mechanic_game"))mechanics.showEditor(root);else if(screen.equals("mechanic_inventions"))mechanics.showInventions(root);else showMenu();
     }
     private void showMenu() {
         TextView motto=text("DEINE IDEENWERKSTATT",12,true);motto.setTextColor(TEAL);root.addView(motto);
         root.addView(text("MeiTüftler",36,true));
         root.addView(text("Was tüftelst du heute?",18,false));
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);
-        LinearLayout choices=column();boolean wide=getResources().getConfiguration().screenWidthDp>=540;
+        LinearLayout choices=column();boolean wide=getResources().getConfiguration().screenWidthDp>=800;
         choices.setOrientation(wide?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);choices.setGravity(Gravity.CENTER);
-        Button marbles=categoryCard("1 · Kugelbahnen\nLass die Murmel rollen!",false,scroll,wide,()->navigate("marbles"));
-        Button machines=categoryCard("2 · Fahrzeuge\nBring deine Maschine in Fahrt!",true,scroll,wide,()->navigate("vehicles"));
-        for(Button card:new Button[]{marbles,machines}) {
+        Button marbles=categoryCard("1 · Kugelbahnen\nLass die Murmel rollen!",0,scroll,wide,()->navigate("marbles"));
+        Button machines=categoryCard("2 · Fahrzeuge\nBring deine Maschine in Fahrt!",1,scroll,wide,()->navigate("vehicles"));
+        Button mechanism=categoryCard("3 · Maschinen & Mechanik\nHeben, ziehen, bewegen!",2,scroll,wide,()->navigate("mechanics"));
+        for(Button card:new Button[]{marbles,machines,mechanism}) {
             LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(wide?0:-1,-2,wide?1:0);
             lp.setMargins(dp(5),dp(8),dp(5),dp(8));choices.addView(card,lp);
         }
@@ -142,14 +148,14 @@ public final class MainActivity extends ComponentActivity {
         root.addView(button("Für Eltern · Info",false,this::parentGate),new LinearLayout.LayoutParams(-1,dp(48)));
         root.addView(text("Ohne Zeitdruck. Jede Idee darf ausprobiert werden.",14,false));
     }
-    private Button categoryCard(String title,boolean vehicle,ScrollView scroll,boolean wide,Runnable action) {
-        Button card=new CategoryButton(vehicle,scroll,wide);card.setText(title);card.setAllCaps(false);
+    private Button categoryCard(String title,int category,ScrollView scroll,boolean wide,Runnable action) {
+        Button card=new CategoryButton(category,scroll,wide);card.setText(title);card.setAllCaps(false);
         card.setMinHeight(dp(48));card.setMinimumWidth(0);card.setMinWidth(0);card.setOnClickListener(v->action.run());
-        card.setTextSize(19);card.setTextColor(vehicle?ORANGE:TEAL);
+        card.setTextSize(19);card.setTextColor(category==2?0xFF6B4F92:category==1?ORANGE:TEAL);
         card.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));card.setGravity(Gravity.CENTER);
         card.setPadding(dp(14),dp(10),dp(14),dp(14));card.setCompoundDrawablePadding(dp(6));
-        GradientDrawable bg=new GradientDrawable();bg.setColor(vehicle?0xFFFFEADC:0xFFE0F1EA);
-        bg.setCornerRadius(dp(22));bg.setStroke(dp(2),vehicle?0xFFE9C7AB:0xFFB4D6CB);
+        GradientDrawable bg=new GradientDrawable();bg.setColor(category==2?0xFFEDE4F5:category==1?0xFFFFEADC:0xFFE0F1EA);
+        bg.setCornerRadius(dp(22));bg.setStroke(dp(2),category==2?0xFFC8B5DD:category==1?0xFFE9C7AB:0xFFB4D6CB);
         card.setBackground(new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(0x22000000),bg,null));
         card.setElevation(dp(2));
         return card;
@@ -158,8 +164,8 @@ public final class MainActivity extends ComponentActivity {
         private final MenuArtwork art;
         private final ScrollView scroll;
         private final boolean wide;
-        CategoryButton(boolean vehicle,ScrollView scroll,boolean wide) {
-            super(MainActivity.this);this.scroll=scroll;this.wide=wide;art=new MenuArtwork(vehicle);
+        CategoryButton(int category,ScrollView scroll,boolean wide) {
+            super(MainActivity.this);this.scroll=scroll;this.wide=wide;art=new MenuArtwork(category);
         }
         @Override protected void onMeasure(int widthSpec,int heightSpec) {
             int width=MeasureSpec.getMode(widthSpec)==MeasureSpec.UNSPECIFIED?dp(300)
@@ -431,5 +437,5 @@ public final class MainActivity extends ComponentActivity {
             .setNegativeButton("Abbrechen",null).setPositiveButton("Test auslösen",(x,y)->{throw new IllegalStateException("MeiTueftler manual Crashlytics test");}).show());
         dialog.show();
     }
-    private void saveBuild() { if(vehicles!=null)vehicles.save();if(current!=null&&prefs!=null)prefs.edit().putString(current.buildKey(),encodeBuild()).apply(); }
+    private void saveBuild() { if(vehicles!=null)vehicles.save();if(mechanics!=null)mechanics.save();if(current!=null&&prefs!=null)prefs.edit().putString(current.buildKey(),encodeBuild()).apply(); }
 }

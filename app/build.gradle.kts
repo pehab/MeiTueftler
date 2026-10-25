@@ -38,7 +38,7 @@ android {
 dependencies {
     implementation("androidx.activity:activity:1.13.0")
     implementation("com.google.android.play:app-update:2.1.0")
-    implementation(platform("com.google.firebase:firebase-bom:35.0.0"))
+    implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
     implementation("com.google.firebase:firebase-crashlytics")
     constraints {
         implementation("androidx.fragment:fragment:1.9.1") {

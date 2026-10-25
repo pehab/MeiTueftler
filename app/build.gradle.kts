@@ -12,8 +12,8 @@ android {
         applicationId = "de.haberland.meitueftler"
         minSdk = 26
         targetSdk = 37
-        versionCode = 16
-        versionName = "0.11.0"
+        versionCode = 17
+        versionName = "0.11.1"
         buildConfigField("boolean", "FIREBASE_CONFIGURED", firebaseConfigured.toString())
     }
     buildFeatures { buildConfig = true }
@@ -53,4 +53,20 @@ dependencies {
 // Fail CI when Java APIs or compiler diagnostics regress.
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked", "-Werror"))
+}
+
+// Optional existing APK signing identity restored by CI; never commit a keystore.
+android {
+    val githubStore = System.getenv("MEI_GITHUB_STORE_FILE")
+    if (!githubStore.isNullOrBlank()) {
+        signingConfigs {
+            create("githubUpdates") {
+                storeFile = file(githubStore)
+                storePassword = System.getenv("MEI_GITHUB_STORE_PASSWORD")
+                keyAlias = System.getenv("MEI_GITHUB_KEY_ALIAS")
+                keyPassword = System.getenv("MEI_GITHUB_KEY_PASSWORD")
+            }
+        }
+        buildTypes.getByName("debug").signingConfig = signingConfigs.getByName("githubUpdates")
+    }
 }

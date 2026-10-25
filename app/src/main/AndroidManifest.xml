@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application android:allowBackup="false" android:fullBackupContent="false" android:dataExtractionRules="@xml/data_extraction_rules" android:label="MeiTüftler" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:theme="@style/AppTheme" android:supportsRtl="true">
         <!-- Firebase starts only after explicit parental consent, never through its provider. -->
         <provider android:name="com.google.firebase.provider.FirebaseInitProvider" android:authorities="${applicationId}.firebaseinitprovider" tools:node="remove" />
@@ -29,5 +31,7 @@
                 <data android:mimeType="text/json" />
             </intent-filter>
         </activity>
+            <provider android:name="de.meiapps.updates.GitHubUpdateProvider"
+            android:authorities="${applicationId}.githubUpdates" android:exported="false" android:grantUriPermissions="true" />
     </application>
 </manifest>

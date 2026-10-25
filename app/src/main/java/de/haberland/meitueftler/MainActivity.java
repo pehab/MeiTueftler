@@ -66,6 +66,7 @@ public final class MainActivity extends ComponentActivity {
         mechanics=new MechanicWorkshop(this,prefs);
         exchange=new MachineExchange(this,prefs);
         if(state!=null)exchange.restoreSession(state);
+        de.meiapps.updates.GitHubUpdates.attach(this,"pehab/MeiTueftler",this::saveBuild);
         updates=new PlayUpdates(this,this::saveBuild);
         sound=prefs.getBoolean("sound",true);
         Diagnostics.start(this,prefs.getBoolean("diagnostics",false));
@@ -443,10 +444,12 @@ public final class MainActivity extends ComponentActivity {
             if(Diagnostics.start(this,value)){prefs.edit().putBoolean("diagnostics",value).apply();Toast.makeText(this,value?"Diagnose eingeschaltet":"Diagnose ausgeschaltet",Toast.LENGTH_SHORT).show();}
             else Toast.makeText(this,"Diagnose konnte nicht aktiviert werden.",Toast.LENGTH_SHORT).show();
         });
-        if(!BuildConfig.DEBUG)dialog.setNeutralButton("Nach Updates suchen",(d,w)->updates.check());
-        if(BuildConfig.DEBUG&&enabled)dialog.setNeutralButton("Test-Absturz",(d,w)->new AlertDialog.Builder(this)
-            .setTitle("Diagnose testen?").setMessage("Die App wird absichtlich beendet. Danach erneut öffnen und den Bericht in Firebase prüfen.")
-            .setNegativeButton("Abbrechen",null).setPositiveButton("Test auslösen",(x,y)->{throw new IllegalStateException("MeiTueftler manual Crashlytics test");}).show());
+        dialog.setNeutralButton("App-Updates",(d,w)->de.meiapps.updates.GitHubUpdates.showSettings(this,"pehab/MeiTueftler"));
+        if(BuildConfig.DEBUG&&enabled)dialog.setNeutralButton("Updates / Diagnose",(d,w)->new AlertDialog.Builder(this)
+            .setTitle("Updates / Diagnose").setItems(new String[]{"App-Updates","Test-Absturz"},(options,index)->{
+                if(index==0){updates.check();return;}
+                new AlertDialog.Builder(this).setTitle("Diagnose testen?").setMessage("Die App wird absichtlich beendet. Danach erneut öffnen und den Bericht in Firebase prüfen.")
+            .setNegativeButton("Abbrechen",null).setPositiveButton("Test auslösen",(x,y)->{throw new IllegalStateException("MeiTueftler manual Crashlytics test");}).show();}).show());
         dialog.show();
     }
     private void saveBuild() { if(vehicles!=null)vehicles.save();if(mechanics!=null)mechanics.save();if(current!=null&&prefs!=null)prefs.edit().putString(current.buildKey(),encodeBuild()).apply(); }

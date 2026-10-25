@@ -1,7 +1,6 @@
 package de.haberland.meitueftler;
 
 import android.app.AlertDialog;
-import android.os.Build;
 import android.widget.Toast;
 import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;
@@ -30,19 +29,10 @@ final class PlayUpdates {
         });
     }
     private boolean installedFromPlay() {
-        if(BuildConfig.DEBUG)return false;
-        try {
-            String installer=Build.VERSION.SDK_INT>=30?activity.getPackageManager().getInstallSourceInfo(activity.getPackageName()).getInstallingPackageName():legacyInstaller();
-            return "com.android.vending".equals(installer);
-        }catch(android.content.pm.PackageManager.NameNotFoundException ignored){return false;}
-    }
-    // Android 8–10 have no InstallSourceInfo replacement. Keep this fallback isolated.
-    @SuppressWarnings("deprecation")
-    private String legacyInstaller() {
-        return activity.getPackageManager().getInstallerPackageName(activity.getPackageName());
+        return de.meiapps.updates.UpdateSource.isPlay(activity);
     }
     void check() {
-        if(!installedFromPlay()){Toast.makeText(activity,"Updates gibt es für die über Google Play installierte App.",Toast.LENGTH_LONG).show();return;}
+        if(!installedFromPlay()){de.meiapps.updates.GitHubUpdates.showSettings(activity,"pehab/MeiTueftler");return;}
         if(manager==null){manager=AppUpdateManagerFactory.create(activity);manager.registerListener(listener); }
         manager.getAppUpdateInfo().addOnSuccessListener(activity,info->{
             if(activity.isFinishing()||activity.isDestroyed())return;
@@ -55,7 +45,7 @@ final class PlayUpdates {
     }
     void close() { if(manager!=null)manager.unregisterListener(listener); }
     void resume() {
-        if(manager!=null)manager.getAppUpdateInfo().addOnSuccessListener(activity,info->{if(info.installStatus()==InstallStatus.DOWNLOADED)offerRestart();});
+        if(manager!=null&&installedFromPlay())manager.getAppUpdateInfo().addOnSuccessListener(activity,info->{if(info.installStatus()==InstallStatus.DOWNLOADED)offerRestart();});
     }
     private void offerRestart() {
         if(prompting||activity.isFinishing()||activity.isDestroyed())return;

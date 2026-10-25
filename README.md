@@ -125,3 +125,7 @@ Java-Compiler- und Android-Lint-Warnungen sowie Gradle-Deprecations brechen den 
 In jeder freien Werkstatt schaltet **Level bearbeiten** von Bauteilen auf Levelpunkte um. Markierte Punkte antippen und ziehen, danach mit **Fertig · Bauteile bauen** zurückwechseln. Kugelbahnen erlauben Start und Korb, Mechanik erlaubt Kiste, Ziel und alle Schraubpunkte. Aufgesetzte Rollen und Winden folgen ihrem Schraubpunkt. Im freien Fahrzeugbau sind Motor und Ziel frei verschiebbar. Streckenenden können gezogen, über **＋ Strecke** bis zu 40 Abschnitte ergänzt und der am Endpunkt gewählte Abschnitt gelöscht werden. Gemeinsame Streckenenden lassen sich einzeln bearbeiten.
 
 Leveländerungen gehören zum Aufbau: Rückgängig, automatisches Speichern, Galerie, Drehung des Geräts und Export/Import behalten sie bei. Alte Aufbauten erhalten ihre bisherige Standardgeometrie. Aufgaben behalten die vorgegebenen Startbereiche, Ziele, Schraubpunkte und Strecken. Dateien mit angepassten Leveln benötigen auf beiden Geräten Version 0.11.0; ältere Apps weisen sie mit einem Updatehinweis ab.
+
+## Updatequelle
+
+Updates folgen der tatsächlichen Installationsquelle: Google Play für Play-Installationen, GitHub für direkt installierte APKs. [Bedienung, Signierung und Veröffentlichung](docs/UPDATES.md).

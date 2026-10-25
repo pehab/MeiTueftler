@@ -9,6 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     outputs:
+      githubSigningReady: ${{ steps.githubSigning.outputs.ready }}
       version: ${{ steps.version.outputs.name }}
     permissions:
       contents: read
@@ -20,6 +21,14 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: Verify update routing and APK metadata contract
+        run: bash scripts/test-update-contract.sh
+      - name: Configure existing GitHub APK signing identity
+        id: githubSigning
+        env:
+          MEI_SIGNING_JSON: ${{ secrets.MEI_SIGNING_JSON }}
+          EXISTING_SIGNING_READY: ${{ secrets.MEITUEFTLER_TEST_KEYSTORE_BASE64 != '' }}
+        run: python3 .github/scripts/setup-github-signing.py
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5, Node.js 24
       - name: Configure private test signing key
         env:
@@ -30,7 +39,7 @@ jobs:
             printf '%s' "$TEST_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/meitueftler-test.keystore"
             echo "MEITUEFTLER_SIGNING_STORE=$RUNNER_TEMP/meitueftler-test.keystore" >> "$GITHUB_ENV"
             echo "Using the persistent private test signing key from Actions secrets."
-          elif [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+          elif [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ] && [ "$MEI_GITHUB_SIGNING_READY" != true ]; then
             echo "::error::MEITUEFTLER_TEST_KEYSTORE_BASE64 is required for published main builds."
             exit 1
           else
@@ -57,7 +66,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7, Node.js 24
         with:
           name: MeiTueftler-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/debug/output-metadata.json
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7, Node.js 24
@@ -176,3 +187,20 @@ jobs:
         with:
           name: exchange-screenshots
           path: screenshots/
+
+  github-updates:
+    needs: [build, smoke, exchange-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.build.outputs.githubSigningReady == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download tested signed APK
+        run: gh run download "$GITHUB_RUN_ID" --name MeiTueftler-debug --dir apk
+      - name: Publish immutable APK and verified update manifest
+        run: python3 .github/scripts/publish-github-update.py
